@@ -42,3 +42,11 @@ class TestClanTag(unittest.TestCase):
     def test_9(self):
         self.user.username = 'koljastrohm-games.com'
         self.assertEqual(self.user.clan_tag(), 'kgc')
+
+    def test_10(self):
+        self.user.username = '1rg3ndw13'
+        self.assertEqual(self.user.clan_tag(), 'rn')
+
+    def test_11(self):
+        self.user.username = 'Greenzone96'
+        self.assertEqual(self.user.clan_tag(), 'Gre')

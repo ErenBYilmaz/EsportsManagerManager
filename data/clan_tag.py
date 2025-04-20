@@ -76,10 +76,10 @@ class ClanTagFrom3Consonants(ClanTagExtractor):
 
 class ClanTagFromSingleWordBeginning(ClanTagExtractor):
     def usable_if(self) -> str:
-        return 'consist of only letters'
+        return 'consist of at least 3 letters followed by 0-4 digits'
 
     def usable(self, username: str) -> bool:
-        return bool(re.fullmatch(r'[^\d\W]{3,}', username))
+        return bool(re.fullmatch(r'[^\d\W]{3,}\d{0,4}', username))
 
     def clan_tag_from_username(self, username: str) -> str:
         return username[:3]
