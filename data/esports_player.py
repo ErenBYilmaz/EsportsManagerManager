@@ -1,8 +1,13 @@
+from typing import Optional
+
 from pydantic import BaseModel
+
+from network.my_types import UserName
 
 
 class ESportsPlayer(BaseModel):
     name: str
+    controller: Optional[UserName] = None  # name of the user controlling the player, or None if bot-controlled
 
     wins: int = 0
     losses: int = 0

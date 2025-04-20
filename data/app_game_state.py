@@ -1,8 +1,11 @@
+import random
 from typing import List, Literal, Optional
 
 from data.app_user import AppUser
 from data.esports_game import ESportsGame
+from data.esports_player import ESportsPlayer
 from data.game_state import GameState
+from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
 class AppGameState(GameState):
@@ -22,3 +25,14 @@ class AppGameState(GameState):
                 return None
             game = game.ongoing_match
         return game
+
+    def user_by_name(self, user_name) -> AppUser:
+        return super().user_by_name(user_name)
+
+    def new_user(self, user: AppUser, initialize):
+        super().new_user(user, initialize)
+        if initialize:
+            player = ESportsPlayer(controller=user.username,
+                                   name=f'[{user.clan_tag()}] {random.choice(PLAYER_NAME_EXAMPLES)}',
+                                   hidden_elo=1700,
+                                   visible_elo=1700,)
