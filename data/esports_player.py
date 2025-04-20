@@ -11,3 +11,9 @@ class ESportsPlayer(BaseModel):
 
     hidden_elo: float
     visible_elo: float
+
+    def rank_sorting_key(self):
+        return (-self.points(), -self.tiebreaker, self.name)
+
+    def points(self):
+        return self.wins + 0.5 * self.draws

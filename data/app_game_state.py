@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from data.app_user import AppUser
 from data.esports_game import ESportsGame
@@ -14,3 +14,11 @@ class AppGameState(GameState):
         game = self.game
         while game.ongoing_match is not None:
             game = game.ongoing_match
+
+    def game_at_depth(self, depth: int) -> Optional[ESportsGame]:
+        game = self.game
+        for _ in range(depth):
+            if game.ongoing_match is None:
+                return None
+            game = game.ongoing_match
+        return game

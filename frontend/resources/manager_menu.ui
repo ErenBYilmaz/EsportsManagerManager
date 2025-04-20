@@ -147,7 +147,7 @@
      <string>Current league overview</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="otherUserTableWidget">
+   <widget class="QTableWidget" name="leagueTableWidget">
     <property name="geometry">
      <rect>
       <x>260</x>
@@ -166,7 +166,7 @@
     </column>
     <column>
      <property name="text">
-      <string>Team name</string>
+      <string>Player name</string>
      </property>
     </column>
     <column>
