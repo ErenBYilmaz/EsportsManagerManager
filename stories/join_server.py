@@ -5,6 +5,7 @@ from data import server_gamestate
 from data.app_game_state import AppGameState
 from data.app_user import AppUser
 from data.app_local_game_state import AppLocalGameState
+from data.clan_tag import clan_tag_valid, CLAN_TAG_FORMATS
 from lib.my_logger import logging
 from network import connection
 from network.my_types import JSONInfo
@@ -33,10 +34,21 @@ class JoinServer(Story):
     def action(self):
         self.client().close_server_connection()
         connection.PORT = int(self.ui.portEdit.text())
-        user = AppUser(username=self.ui.usernameEdit.text())
+        username = self.ui.usernameEdit.text()
+        if not clan_tag_valid(username):
+            self.ui.critical('Invalid username', self.username_format_description())
+            return
+        user = AppUser(username=username)
         response = self.to_server({'username': user.username})
         user.session_id = response['session_id']
         gs = AppGameState(game_name=response['game_name'])
         gs.new_user(user, initialize=False)
         self.client().local_gamestate = AppLocalGameState(gs, main_user_name=user.username)
         self.client().open_manager_window()
+
+    def username_format_description(self):
+        return (
+                'The username must fulfill at least one of the following conditions:'
+                + '\n - '
+                + '\n - '.join(e.usable_if() for e in CLAN_TAG_FORMATS)
+        )
