@@ -1,0 +1,9 @@
+frontend/generated
+logs
+*.sav.pkl
+*.bak*
+.idea
+dist
+build
+*_spec.py
+.idea
