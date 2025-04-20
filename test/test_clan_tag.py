@@ -50,3 +50,11 @@ class TestClanTag(unittest.TestCase):
     def test_11(self):
         self.user.username = 'Greenzone96'
         self.assertEqual(self.user.clan_tag(), 'Gre')
+
+    def test_12(self):
+        self.user.username = '[][]'
+        self.assertEqual(self.user.clan_tag(), None)
+
+    def test_13(self):
+        self.user.username = '[ADE]'
+        self.assertEqual(self.user.clan_tag(), 'ADE')

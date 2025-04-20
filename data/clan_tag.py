@@ -15,12 +15,14 @@ class ClanTagExtractor:
 
 class ClanTagFromShortName(ClanTagExtractor):
     def usable_if(self) -> str:
-        return 'consist of 3-4 characters'
+        return 'consist of 3-4 characters not counting any `[` and `]`'
 
     def usable(self, username: str) -> bool:
+        username = re.sub(r'[\[\]]', '', username)
         return 3 <= len(username) <= 4
 
     def clan_tag_from_username(self, username: str) -> str:
+        username = re.sub(r'[\[\]]', '', username)
         return username
 
 
