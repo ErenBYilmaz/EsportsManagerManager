@@ -1,4 +1,4 @@
-# Esports Manager Manager
+# Esports Manager Manager (under construction)
 
 This is the source code for the game Esports Manager Manager.
 In this game, you manage a team of esports players playing the famous game Esports Manager Manager.
