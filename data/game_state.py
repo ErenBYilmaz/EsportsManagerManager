@@ -59,15 +59,16 @@ class GameState(BaseModel):
     def save_file_exists(game_name) -> bool:
         return os.path.isfile(GameState.save_name_by_game_name(game_name))
 
-    @staticmethod
-    def load(game_name) -> 'GameState':
-        with open(GameState.save_name_by_game_name(game_name), 'rb') as save_file:
-            result = GameState.model_validate_json(json.load(save_file))
+    @classmethod
+    def load(cls, game_name) -> 'GameState':
+        with open(cls.save_name_by_game_name(game_name), 'r') as save_file:
+            data = save_file.read()
+        result = cls.model_validate_json(data)
         assert type(result).__name__ == 'AppGameState'
         return result
 
     def info_for_user(self, username: str):
-        json_info = self.to_json()
+        json_info = self.model_dump(mode='python')
         for user_info in json_info['users']:
             if user_info['username'] != username:
                 del user_info['session_id']

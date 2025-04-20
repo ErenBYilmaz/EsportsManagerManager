@@ -1,0 +1,2 @@
+class SuccessMessage(RuntimeError):
+    pass

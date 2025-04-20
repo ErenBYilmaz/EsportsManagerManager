@@ -1,11 +1,8 @@
-import getpass
 import typing
 
-import PyQt5.QtCore
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QShortcut
 
-from frontend.generated.main_menu import Ui_MainWindow
+from data.app_game_state import AppGameState
 from frontend.generated.manager_menu import Ui_ManagerWindow
 
 if typing.TYPE_CHECKING:
@@ -13,17 +10,20 @@ if typing.TYPE_CHECKING:
 
 
 class ManagerMenu(Ui_ManagerWindow):
-    def __init__(self, client: 'AppClient'):
+    def __init__(self, client: 'AppClient', depth: int):
         super().__init__()
         self.client = client
+        self.depth = depth
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
-        if not self.client.local_gamestate.game_to_show().is_nested():
-            self.replacePlayerButton_2.setVisible(False)
+        self.replacePlayerButton_2.setVisible(self.depth > 0)
 
     def critical(self, title, msg):
         QtWidgets.QMessageBox.critical(self.centralwidget, title, msg)
 
     def information(self, title, msg):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
+
+    def update_gamestate(self, gs: AppGameState):
+        pass

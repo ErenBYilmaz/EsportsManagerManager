@@ -1,6 +1,6 @@
 frontend/generated
 logs
-*.sav.pkl
+*.sav.*
 *.bak*
 .idea
 dist

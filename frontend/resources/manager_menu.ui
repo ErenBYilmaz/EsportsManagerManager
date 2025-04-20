@@ -14,19 +14,6 @@
    <string>TimeZone</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLineEdit" name="playerNameEdit">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>113</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Player name</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -37,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Managed player name</string>
+     <string>Managed player name:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -383,6 +370,19 @@
     </property>
     <property name="text">
      <string>Stop micro-managing</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="playerNameLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>191</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Managed player name</string>
     </property>
    </widget>
   </widget>
