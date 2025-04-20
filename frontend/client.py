@@ -10,7 +10,7 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QMessageBox
 
 import stories.check_game_state
-from data.app_local_gamestate import AppLocalGameState
+from data.app_local_game_state import AppLocalGameState
 from debug import debug
 from frontend.src.main_menu import MainMenu
 from lib.compact_dict_string import compact_object_string

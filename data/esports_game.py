@@ -20,3 +20,6 @@ class ESportsGame(BaseModel):
         if self.ongoing_match is not None:
             return 'match'
         return 'management'
+
+    def is_nested(self):
+        return self.parent_game is not None

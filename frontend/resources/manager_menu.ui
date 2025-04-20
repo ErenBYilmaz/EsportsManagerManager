@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CraftingWindow</class>
- <widget class="QMainWindow" name="CraftingWindow">
+ <class>ManagerWindow</class>
+ <widget class="QMainWindow" name="ManagerWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -103,6 +103,9 @@
     </property>
     <property name="text">
      <string>NEW OPTION: Micro-manage your player instead of picking a strategy beforehand</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton_5">
@@ -369,13 +372,13 @@
      <string>Public live streaming</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="replacePlayerButton_2">
+   <widget class="QPushButton" name="stopMicroManageButton">
     <property name="geometry">
      <rect>
-      <x>790</x>
-      <y>530</y>
-      <width>131</width>
-      <height>31</height>
+      <x>770</x>
+      <y>520</y>
+      <width>151</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">

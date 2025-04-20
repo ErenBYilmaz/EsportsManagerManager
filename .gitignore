@@ -6,4 +6,3 @@ logs
 dist
 build
 *_spec.py
-.idea
