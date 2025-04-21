@@ -10,7 +10,7 @@ from lib.util import EBC
 class Story(EBC):
     def __init__(self, ui):
         import frontend.src
-        self.ui: Union[frontend.src.crafting_menu.CraftingMenu, frontend.src.main_menu.MainMenu, None] = ui
+        self.ui: Union[frontend.src.main_menu.MainMenu, None] = ui
 
     def client(self):
         return self.ui.client

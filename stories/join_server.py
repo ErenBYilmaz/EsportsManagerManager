@@ -2,7 +2,7 @@ import typing
 import uuid
 
 from data import server_gamestate
-from data.app_game_state import AppGameState
+from data.app_gamestate import AppGameState
 from data.app_user import AppUser
 from data.app_local_game_state import AppLocalGameState
 from data.clan_tag import clan_tag_valid, CLAN_TAG_FORMATS

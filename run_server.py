@@ -17,7 +17,7 @@ from geventwebsocket import WebSocketError
 from geventwebsocket.websocket import WebSocket
 
 from data import server_gamestate
-from data.app_game_state import AppGameState
+from data.app_gamestate import AppGameState
 from network import connection
 from debug import debug
 
@@ -105,10 +105,11 @@ if __name__ == '__main__':
 
     if len(sys.argv) <= 1:
         raise RuntimeError(f'Missing required parameter: game name\n Example call ´{" ".join(server_call("mygamename123"))}´')
-    if AppGameState.save_file_exists(sys.argv[1]):
-        server_gamestate.gs = AppGameState.load(sys.argv[1])
+    save_path = sys.argv[1]
+    if AppGameState.save_file_exists(save_path):
+        server_gamestate.gs = AppGameState.load(save_path)
     else:
-        server_gamestate.gs = AppGameState(users=[], game_name=sys.argv[1])
+        server_gamestate.gs = AppGameState.create(game_name=save_path)
     if len(sys.argv) >= 3:
         connection.PORT = int(sys.argv[2])
 

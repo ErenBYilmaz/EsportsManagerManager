@@ -15,6 +15,7 @@ class ESportsGame(BaseModel):
         for name, player in v.items():
             if name != player.name:
                 raise ValueError(f"Player name '{player.name}' does not match key '{name}'")
+        return v
 
     def phase(self):
         if self.ongoing_match is not None:
@@ -23,3 +24,9 @@ class ESportsGame(BaseModel):
 
     def is_nested(self):
         return self.parent_game is not None
+
+    def player_controlled_by(self, username):
+        for player in self.players.values():
+            if player.controller == username:
+                return player
+        return None

@@ -1,7 +1,7 @@
 import json
 import os
 import pickle
-from typing import List, Literal
+from typing import List, Literal, Any, Dict
 
 from pydantic import BaseModel
 
@@ -10,7 +10,7 @@ from network.my_types import UserName
 
 
 class GameState(BaseModel):
-    type: str
+    type: str = 'GameState'
     game_name: str
     users: List[User] = []
 
@@ -38,7 +38,7 @@ class GameState(BaseModel):
 
     def commit(self):
         with open(self.save_file_name(), 'w') as save_file:
-            json.dump(self.model_dump(mode='json'), save_file)
+            json.dump(self.model_dump(mode='json'), save_file, indent=2)
 
     def rollback(self):
         if not os.path.isfile(self.save_file_name()):
@@ -74,7 +74,7 @@ class GameState(BaseModel):
                 del user_info['session_id']
         return json_info
 
-    def update_from_json(self, json_info):
+    def update_from_json(self, json_info: Dict[str, Any]):
         if 'users' in json_info:
             for user_info in json_info['users']:
                 if not self.user_name_exists(user_info['username']):
@@ -87,6 +87,10 @@ class GameState(BaseModel):
         if any(u.username == user.username for u in self.users):
             raise RuntimeError
         self.users.append(user)
+
+    @classmethod
+    def create(cls, game_name):
+        return GameState(users=[], game_name=game_name)
 
     def user_name_exists(self, username: UserName):
         return any(u.username == username for u in self.users)

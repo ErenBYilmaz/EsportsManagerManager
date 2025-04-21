@@ -1,5 +1,5 @@
 from typing import Optional
 
-import data.app_game_state
+import data.app_gamestate
 
 gs: Optional['data.app_gamestate.AppGameState'] = None

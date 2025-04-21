@@ -1,5 +1,5 @@
 import frontend.app_client
-from data.app_game_state import AppGameState
+from data.app_gamestate import AppGameState
 from frontend.generated.settings_menu import Ui_SettingsWindow
 
 

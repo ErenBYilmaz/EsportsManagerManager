@@ -101,3 +101,10 @@ def clan_tag_valid(username) -> bool:
         if fmt.usable(username):
             return True
     return False
+
+
+def clan_tag_from_name(username):
+    for fmt in CLAN_TAG_FORMATS:
+        if fmt.usable(username):
+            return fmt.clan_tag_from_username(username)
+    return None

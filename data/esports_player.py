@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from data.clan_tag import clan_tag_from_name
 from network.my_types import UserName
 
 
@@ -22,3 +23,11 @@ class ESportsPlayer(BaseModel):
 
     def points(self):
         return self.wins + 0.5 * self.draws
+
+    def clan_tag(self):
+        if self.controller is None:
+            return 'BOT'
+        return clan_tag_from_name(self.controller)
+
+    def tag_and_name(self):
+        return f'[{self.clan_tag()}] {self.name}'

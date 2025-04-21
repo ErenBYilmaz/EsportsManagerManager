@@ -1,4 +1,4 @@
-from data.app_game_state import AppGameState
+from data.app_gamestate import AppGameState
 from data.local_game_state import LocalGameState
 
 
