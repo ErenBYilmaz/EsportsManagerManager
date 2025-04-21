@@ -1,6 +1,7 @@
 import unittest
 
 from data.app_user import AppUser
+from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
 class TestClanTag(unittest.TestCase):
@@ -63,3 +64,8 @@ class TestClanTag(unittest.TestCase):
         for username in ['DESKTOP-6BUMF70', 'DESKTOP-C29IE4D', 'DESKTOP-VO4T18A']:
             self.user.username = username
             self.assertNotEqual(self.user.clan_tag(), None)
+
+    def test_player_names(self):
+        for player_name in PLAYER_NAME_EXAMPLES:
+            self.user.username = player_name
+            self.assertNotEqual(self.user.clan_tag(), None, msg=player_name)

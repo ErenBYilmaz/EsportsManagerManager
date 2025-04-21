@@ -52,6 +52,16 @@ class AppClient(Client):
         for ui in self.waiting_menus:
             ui.update_gamestate(gs)
 
+        for menu_list in [self.manager_menus, self.settings_menus, self.waiting_menus]:
+            for ui in menu_list.copy():
+                if ui.centralwidget.window().isHidden():
+                    menu_list.remove(ui)
+            for ui in menu_list:
+                ui.update_gamestate(gs)
+        for window in list(self.open_windows):
+            if window.isHidden():
+                self.open_windows.remove(window)
+
     def open_waiting_window(self, depth: int):
         with self.handling_errors():
             waiting_window = QtWidgets.QMainWindow()

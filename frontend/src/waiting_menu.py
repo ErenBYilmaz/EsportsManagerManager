@@ -30,7 +30,7 @@ class WaitingMenu(Ui_WaitingWindow):
 
     def ready(self, flag: bool=True):
         self.ready_status = flag
-        SetReadyStatus(self).action()
+        SetReadyStatus(self)()
 
     def toggle_ready(self):
         self.ready(not self.ready_status)
@@ -43,6 +43,9 @@ class WaitingMenu(Ui_WaitingWindow):
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
+        if game.ongoing_match:
+            self.centralwidget.window().close()
+            return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)
         table = self.otherUserTableWidget

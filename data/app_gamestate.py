@@ -1,12 +1,9 @@
 import random
 from typing import List, Literal, Optional, Dict, Any
 
-from config import NUM_PLAYERS_IN_TOURNAMENT
 from data.app_user import AppUser
 from data.esports_game import ESportsGame
-from data.esports_player import ESportsPlayer
 from data.game_state import GameState
-from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
 class AppGameState(GameState):
@@ -40,13 +37,7 @@ class AppGameState(GameState):
     @classmethod
     def create(cls, game_name):
         state = AppGameState(users=[], game_name=game_name)
-        player_names = random.sample(PLAYER_NAME_EXAMPLES, NUM_PLAYERS_IN_TOURNAMENT)
-        for name in player_names:
-            player = ESportsPlayer(controller=None,
-                                   name=name,
-                                   hidden_elo=1700,
-                                   visible_elo=1700, )
-            state.game.players[player.name] = player
+        state.game.create_players()
         return state
 
     def update_from_json(self, json_info: Dict[str, Any]):

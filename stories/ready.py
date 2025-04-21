@@ -24,7 +24,11 @@ class SetReadyStatus(Story):
         else:
             if player_name in game.ready_players:
                 game.ready_players.remove(player_name)
-        return {'ready': ready, 'player_name': player_name}
+
+        if game.everyone_ready():
+            game.start_match()
+
+        return {'ready': ready, 'player_name': player_name, 'everyone_ready': game.everyone_ready()}
 
     def action(self):
         self.to_server({'ready': self.ui.ready_status, 'depth': self.ui.depth})
