@@ -58,3 +58,8 @@ class TestClanTag(unittest.TestCase):
     def test_13(self):
         self.user.username = '[ADE]'
         self.assertEqual(self.user.clan_tag(), 'ADE')
+
+    def test_14(self):
+        for username in ['DESKTOP-6BUMF70', 'DESKTOP-C29IE4D', 'DESKTOP-VO4T18A']:
+            self.user.username = username
+            self.assertNotEqual(self.user.clan_tag(), None)
