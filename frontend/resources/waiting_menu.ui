@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CraftingWindow</class>
- <widget class="QMainWindow" name="CraftingWindow">
+ <class>WaitingWindow</class>
+ <widget class="QMainWindow" name="WaitingWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,23 +17,26 @@
    <widget class="QTableWidget" name="otherUserTableWidget">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>100</y>
+      <x>20</x>
+      <y>60</y>
       <width>321</width>
-      <height>311</height>
+      <height>361</height>
      </rect>
     </property>
     <property name="sortingEnabled">
      <bool>true</bool>
     </property>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
     <column>
      <property name="text">
-      <string>Player name</string>
+      <string>Manager name</string>
      </property>
     </column>
     <column>
      <property name="text">
-      <string>Team name</string>
+      <string>Player name</string>
      </property>
     </column>
     <column>
@@ -45,14 +48,14 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>60</y>
+      <x>20</x>
+      <y>20</y>
       <width>161</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Waiting for other players...</string>
+     <string>Waiting for other managers...</string>
     </property>
    </widget>
   </widget>

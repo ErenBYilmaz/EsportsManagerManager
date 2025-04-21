@@ -5,6 +5,7 @@ from PyQt5 import QtWidgets
 from frontend.client import Client
 from frontend.src.manager_menu import ManagerMenu
 from frontend.src.settings_menu import SettingsMenu
+from frontend.src.waiting_menu import WaitingMenu
 from lib.util import EBC
 
 
@@ -17,6 +18,7 @@ class AppClient(Client):
         super().__init__()
         self.manager_menus: List[ManagerMenu] = []
         self.settings_menus: List[SettingsMenu] = []
+        self.waiting_menus: List[WaitingMenu] = []
         self.open_windows: List[QtWidgets.QMainWindow] = []
 
     def open_first_window(self):
@@ -47,3 +49,16 @@ class AppClient(Client):
             ui.update_gamestate(gs)
         for ui in self.settings_menus:
             ui.update_gamestate(gs)
+        for ui in self.waiting_menus:
+            ui.update_gamestate(gs)
+
+    def open_waiting_window(self, depth: int):
+        with self.handling_errors():
+            waiting_window = QtWidgets.QMainWindow()
+            waiting_ui = WaitingMenu(self, depth=depth)
+            waiting_ui.setupUi(waiting_window)
+            waiting_window.show()
+            self.waiting_menus.append(waiting_ui)
+            self.open_windows.append(waiting_window)
+            self.check_game_state()
+        return waiting_ui

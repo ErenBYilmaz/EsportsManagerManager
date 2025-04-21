@@ -14,7 +14,7 @@ class AppGameState(GameState):
     users: List[AppUser] = []
     game: ESportsGame = ESportsGame()
 
-    def lowest_level_game(self):
+    def lowest_level_game(self) -> ESportsGame:
         game = self.game
         while game.ongoing_match is not None:
             game = game.ongoing_match

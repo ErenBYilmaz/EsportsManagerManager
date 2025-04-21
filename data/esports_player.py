@@ -5,9 +5,11 @@ from pydantic import BaseModel
 from data.clan_tag import clan_tag_from_name
 from network.my_types import UserName
 
+PlayerName = str
+
 
 class ESportsPlayer(BaseModel):
-    name: str
+    name: PlayerName
     controller: Optional[UserName] = None  # name of the user controlling the player, or None if bot-controlled
 
     wins: int = 0

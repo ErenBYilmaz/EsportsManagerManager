@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from frontend.generated.manager_menu import Ui_ManagerWindow
+from stories.ready import SetReadyStatus
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
@@ -20,6 +21,7 @@ class ManagerMenu(Ui_ManagerWindow):
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.stopMicroManageButton.setVisible(self.depth > 0)
+        self.startMatchButton.clicked.connect(self.user_ready)
 
     def my_player(self):
         return self.client.local_gamestate.game_state.game_at_depth(self.depth).player_controlled_by(self.client.local_gamestate.main_user().username)
@@ -29,6 +31,10 @@ class ManagerMenu(Ui_ManagerWindow):
 
     def information(self, title, msg):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
+
+    def user_ready(self):
+        waiting_ui = self.client.open_waiting_window(depth=self.depth)
+        waiting_ui.ready(True)
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)

@@ -1,13 +1,14 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Set
 
 from pydantic import BaseModel, field_validator
 
-from data.esports_player import ESportsPlayer
+from data.esports_player import ESportsPlayer, PlayerName
 
 
 class ESportsGame(BaseModel):
     players: Dict[str, ESportsPlayer] = {}
     ongoing_match: Optional['ESportsGame'] = None
+    ready_players: List[PlayerName] = []
 
     @field_validator('players')
     @classmethod

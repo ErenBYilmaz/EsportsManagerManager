@@ -2,6 +2,7 @@ from typing import Dict, Type
 
 from stories.check_game_state import CheckGameState
 from stories.join_server import JoinServer
+from stories.ready import SetReadyStatus
 from stories.start_server import StartServer
 from stories.story import Story
 
@@ -9,7 +10,8 @@ from stories.story import Story
 valid_post_routes: Dict[str, Type[Story]] = {
     story.__name__.strip().lower(): story for story in [JoinServer,
                                                         StartServer,
-                                                        CheckGameState, ]
+                                                        CheckGameState,
+                                                        SetReadyStatus, ]
 }
 
 push_message_types = set()
