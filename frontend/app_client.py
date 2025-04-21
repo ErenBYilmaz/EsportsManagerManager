@@ -20,6 +20,7 @@ class AppClient(Client):
         self.settings_menus: List[SettingsMenu] = []
         self.waiting_menus: List[WaitingMenu] = []
         self.open_windows: List[QtWidgets.QMainWindow] = []
+        self.closed = False
 
     def open_first_window(self):
         self.open_manager_window()
@@ -45,22 +46,17 @@ class AppClient(Client):
 
     def after_state_update(self):
         gs = self.local_gamestate.game_state
-        for ui in self.manager_menus:
-            ui.update_gamestate(gs)
-        for ui in self.settings_menus:
-            ui.update_gamestate(gs)
-        for ui in self.waiting_menus:
-            ui.update_gamestate(gs)
-
         for menu_list in [self.manager_menus, self.settings_menus, self.waiting_menus]:
-            for ui in menu_list.copy():
-                if ui.centralwidget.window().isHidden():
-                    menu_list.remove(ui)
+            self.cleanup_closed_menus(menu_list)
             for ui in menu_list:
                 ui.update_gamestate(gs)
-        for window in list(self.open_windows):
-            if window.isHidden():
-                self.open_windows.remove(window)
+            self.cleanup_closed_menus(menu_list)
+
+    def cleanup_closed_menus(self, menu_list):
+        for ui in menu_list.copy():
+            if ui.closed:
+                menu_list.remove(ui)
+                self.open_windows.remove(ui.centralwidget.window())
 
     def open_waiting_window(self, depth: int):
         with self.handling_errors():

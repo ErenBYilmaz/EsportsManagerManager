@@ -1,6 +1,7 @@
 import typing
 
 from data import server_gamestate
+from network.connection import bad_request, precondition_failed
 from network.my_types import JSONInfo
 from stories.story import Story
 
@@ -17,6 +18,8 @@ class SetReadyStatus(Story):
         user = server_gamestate.gs.user_by_session_id(json_info['session_id'])
         ready = bool(json_info['ready'])
         game = server_gamestate.gs.game_at_depth(json_info['depth'])
+        if game.ongoing_match is not None:
+            return precondition_failed('Cannot set ready status during an ongoing match.')
         player_name = game.player_controlled_by(user.username).name
         if ready:
             if player_name not in game.ready_players:

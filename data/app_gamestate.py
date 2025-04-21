@@ -15,6 +15,15 @@ class AppGameState(GameState):
         game = self.game
         while game.ongoing_match is not None:
             game = game.ongoing_match
+        return game
+
+    def depth(self):
+        depth = 0
+        game = self.game
+        while game.ongoing_match is not None:
+            depth += 1
+            game = game.ongoing_match
+        return depth
 
     def game_at_depth(self, depth: int) -> Optional[ESportsGame]:
         game = self.game

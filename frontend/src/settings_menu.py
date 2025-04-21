@@ -7,6 +7,10 @@ class SettingsMenu(Ui_SettingsWindow):
     def __init__(self, client: 'frontend.app_client.AppClient'):
         super().__init__()
         self.client = client
+        self.closed = False
+
+    def closeEvent(self, _event):
+        self.closed = True
 
     def update_gamestate(self, gs: AppGameState):
         pass

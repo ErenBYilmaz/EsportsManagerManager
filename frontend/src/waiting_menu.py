@@ -17,6 +17,10 @@ class WaitingMenu(Ui_WaitingWindow):
         self.ready_status = True
         self.client = client
         self.depth = depth
+        self.closed = False
+
+    def closeEvent(self, _event):
+        self.closed = True
 
     def setupUi(self, WaitingWindow):
         super().setupUi(WaitingWindow)
@@ -45,6 +49,8 @@ class WaitingMenu(Ui_WaitingWindow):
         game = gs.game_at_depth(self.depth)
         if game.ongoing_match:
             self.centralwidget.window().close()
+            self.closed = True
+            self.client.open_manager_window(depth=self.depth + 1)
             return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)

@@ -17,6 +17,10 @@ class ManagerMenu(Ui_ManagerWindow):
         super().__init__()
         self.client = client
         self.depth = depth
+        self.closed = False
+
+    def closeEvent(self, _event):
+        self.closed = True
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
@@ -24,7 +28,10 @@ class ManagerMenu(Ui_ManagerWindow):
         self.startMatchButton.clicked.connect(self.user_ready)
 
     def my_player(self):
-        return self.client.local_gamestate.game_state.game_at_depth(self.depth).player_controlled_by(self.client.local_gamestate.main_user().username)
+        return self.game().player_controlled_by(self.client.local_gamestate.main_user().username)
+
+    def game(self):
+        return self.client.local_gamestate.game_state.game_at_depth(self.depth)
 
     def critical(self, title, msg):
         QtWidgets.QMessageBox.critical(self.centralwidget, title, msg)
@@ -33,6 +40,9 @@ class ManagerMenu(Ui_ManagerWindow):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
 
     def user_ready(self):
+        if self.game().ongoing_match is not None:
+            self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
+            return
         waiting_ui = self.client.open_waiting_window(depth=self.depth)
         waiting_ui.ready(True)
 
