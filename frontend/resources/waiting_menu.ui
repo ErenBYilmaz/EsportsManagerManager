@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
-    <height>477</height>
+    <width>359</width>
+    <height>466</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>20</x>
       <y>60</y>
       <width>321</width>
-      <height>361</height>
+      <height>321</height>
      </rect>
     </property>
     <property name="sortingEnabled">
@@ -58,13 +58,26 @@
      <string>Waiting for other managers...</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="readyToggleButton">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>390</y>
+      <width>321</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Toggle Ready status</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>375</width>
+     <width>359</width>
      <height>21</height>
     </rect>
    </property>

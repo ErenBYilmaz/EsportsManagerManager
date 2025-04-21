@@ -18,6 +18,10 @@ class WaitingMenu(Ui_WaitingWindow):
         self.client = client
         self.depth = depth
 
+    def setupUi(self, WaitingWindow):
+        super().setupUi(WaitingWindow)
+        self.readyToggleButton.clicked.connect(self.toggle_ready)
+
     def critical(self, title, msg):
         QtWidgets.QMessageBox.critical(self.centralwidget, title, msg)
 
@@ -27,6 +31,15 @@ class WaitingMenu(Ui_WaitingWindow):
     def ready(self, flag: bool=True):
         self.ready_status = flag
         SetReadyStatus(self).action()
+
+    def toggle_ready(self):
+        self.ready(not self.ready_status)
+
+    def update_button_text(self):
+        if self.ready_status:
+            self.readyToggleButton.setText('Your status: Ready')
+        else:
+            self.readyToggleButton.setText('Your status: Not Ready')
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
@@ -39,3 +52,4 @@ class WaitingMenu(Ui_WaitingWindow):
             table.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.name))
             is_ready = player.name in game.ready_players
             table.setItem(row_idx, 2, QtWidgets.QTableWidgetItem('Ready' if is_ready else 'Not Ready'))
+        self.update_button_text()
