@@ -1,4 +1,5 @@
 import typing
+from typing import Literal
 
 from PyQt5 import QtWidgets
 
@@ -11,12 +12,16 @@ if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
 
 
+
+WaitingCondition = Literal['match_begin', 'match_end']
+
 class WaitingMenu(Ui_WaitingWindow):
-    def __init__(self, client: 'AppClient', depth: int):
+    def __init__(self, client: 'AppClient', depth: int, wait_for: WaitingCondition):
         super().__init__()
         self.ready_status = True
         self.client = client
         self.depth = depth
+        self.wait_for = wait_for
         self.closed = False
 
     def closeEvent(self, _event):
@@ -47,10 +52,16 @@ class WaitingMenu(Ui_WaitingWindow):
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
-        if game.ongoing_match:
+        if game.ongoing_match and self.wait_for == 'match_begin':
             self.centralwidget.window().close()
             self.closed = True
             self.client.open_manager_window(depth=self.depth + 1)
+            return
+        if not game.ongoing_match and self.wait_for == 'match_end':
+            self.centralwidget.window().close()
+            self.closed = True
+            if not self.client.manager_menu_open(depth=self.depth):
+                self.client.open_manager_window(depth=self.depth)
             return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)

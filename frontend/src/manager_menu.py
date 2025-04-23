@@ -6,7 +6,6 @@ from PyQt5 import QtWidgets
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from frontend.generated.manager_menu import Ui_ManagerWindow
-from stories.ready import SetReadyStatus
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
@@ -41,7 +40,13 @@ class ManagerMenu(Ui_ManagerWindow):
 
     def user_ready(self):
         if self.game().ongoing_match is not None:
-            self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
+            if self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1):
+                self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
+            else:
+                if self.microManageRadioButton.isChecked():
+                    self.client.open_manager_window(depth=self.depth + 1)
+                else:
+                    self.client.open_waiting_window(depth=self.depth + 1, wait_for='match_begin')
             return
         waiting_ui = self.client.open_waiting_window(depth=self.depth)
         waiting_ui.ready(True)

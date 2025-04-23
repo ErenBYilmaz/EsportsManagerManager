@@ -44,7 +44,7 @@ class JoinServer(Story):
         gs = AppGameState(game_name=response['game_name'])
         gs.new_user(user, initialize=False)
         self.client().local_gamestate = AppLocalGameState(gs, main_user_name=user.username)
-        self.client().open_manager_window()
+        self.client().open_manager_window(depth=gs.depth())
 
     def username_format_description(self):
         return (
