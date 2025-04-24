@@ -24,7 +24,8 @@ class ManagerMenu(Ui_ManagerWindow):
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.stopMicroManageButton.setVisible(self.depth > 0)
-        self.startMatchButton.clicked.connect(self.user_ready)
+        self.startMatchButton.clicked.connect(self.user_ready_for_next_tournament_game)
+        self.stopMicroManageButton.clicked.connect(self.stop_micro_manage)
 
     def my_player(self):
         return self.game().player_controlled_by(self.client.local_gamestate.main_user().username)
@@ -38,18 +39,32 @@ class ManagerMenu(Ui_ManagerWindow):
     def information(self, title, msg):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
 
-    def user_ready(self):
-        if self.game().ongoing_match is not None:
+    def user_ready_for_next_tournament_game(self):
+        if self.game().ongoing_match is None:
+            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_begin')
+            waiting_ui.ready(True)
+        else:
             if self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1):
                 self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
             else:
                 if self.microManageRadioButton.isChecked():
                     self.client.open_manager_window(depth=self.depth + 1)
                 else:
-                    self.client.open_waiting_window(depth=self.depth + 1, wait_for='match_begin')
+                    self.client.open_waiting_window(depth=self.depth + 1, wait_for='match_end')
             return
-        waiting_ui = self.client.open_waiting_window(depth=self.depth)
-        waiting_ui.ready(True)
+
+    def user_ready_for_end_of_game(self):
+        if self.game() is not None:
+            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_end')
+            waiting_ui.ready(True)
+
+    def stop_micro_manage(self):
+        if not self.client.waiting_menu_open(depth=self.depth):
+            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_end')
+            waiting_ui.ready(True)
+        self.closed = True
+        self.centralwidget.window().close()
+        self.user_ready_for_end_of_game()
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)

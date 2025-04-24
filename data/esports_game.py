@@ -59,3 +59,9 @@ class ESportsGame(BaseModel):
         for player, controller in zip(self.ongoing_match.players.values(), self.players.values()):
             player.controller = controller.controller
             player.manager = controller.name
+
+    def skip_to_end_of_ongoing_match(self):
+        if self.ongoing_match is None:
+            raise RuntimeError("No ongoing match to skip")
+        raise NotImplementedError('TO DO')
+        self.ongoing_match = None
