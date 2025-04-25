@@ -3,6 +3,7 @@ import math
 import random
 from typing import List, Iterable, Tuple
 
+import numpy.random
 from trueskill import TrueSkill, Rating
 
 
@@ -23,7 +24,7 @@ class CustomTrueSkill(TrueSkill):
     def sample_ranks(self, rating_groups: List[Tuple[Rating]]):
         performances = [
             sum([
-                random.normalvariate(rating.mu, self.sigma - self.beta)
+                random.normalvariate(rating.mu, self.beta)
                 for rating in rating_group
             ])
             for rating_group in rating_groups
