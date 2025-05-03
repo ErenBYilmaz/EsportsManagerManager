@@ -13,19 +13,14 @@ class ESportsPlayer(BaseModel):
     controller: Optional[UserName] = None  # name of the user controlling the player, or None if bot-controlled
     manager: Optional[PlayerName] = None  # name of the manager controlling the player, or None if top-level
 
-    wins: int = 0
-    losses: int = 0
-    draws: int = 0
-    tiebreaker: int = 0
+    average_rank: float = 0
 
     hidden_elo: float
     visible_elo: float
+    visible_elo_sigma: float
 
     def rank_sorting_key(self):
-        return (-self.points(), -self.tiebreaker, self.name[::-1][len(self.name)//2:])
-
-    def points(self):
-        return self.wins + 0.5 * self.draws
+        return (-self.average_rank, -self.visible_elo, self.name[::-1][len(self.name)//2:])
 
     def clan_tag(self):
         if self.controller is not None:

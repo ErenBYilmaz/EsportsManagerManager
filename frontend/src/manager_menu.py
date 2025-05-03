@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from frontend.generated.manager_menu import Ui_ManagerWindow
+from frontend.src.waiting_menu import WaitingCondition
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
@@ -41,8 +42,10 @@ class ManagerMenu(Ui_ManagerWindow):
 
     def user_ready_for_next_tournament_game(self):
         if self.game().ongoing_match is None:
-            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_begin')
-            waiting_ui.ready(True)
+            if not self.client.waiting_menu_open(depth=self.depth):
+                wait_for: WaitingCondition = 'match_begin' if self.microManageRadioButton.isChecked() else 'match_end'
+                waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for=wait_for)
+                waiting_ui.ready(True)
         else:
             if self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1):
                 self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
@@ -78,7 +81,5 @@ class ManagerMenu(Ui_ManagerWindow):
             place_string = ' ' * add_leading_spaces + place_string
             self.leagueTableWidget.setItem(row_idx, 0, QtWidgets.QTableWidgetItem(place_string))
             self.leagueTableWidget.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.tag_and_name()))
-            self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(str(player.points())))
-            self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(player.tiebreaker)))
-            self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(f'{player.wins}/{player.draws}/{player.losses}'))
-            self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))
+            self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(str(player.average_rank)))
+            self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))

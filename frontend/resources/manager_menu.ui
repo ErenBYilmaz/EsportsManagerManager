@@ -186,17 +186,7 @@
     </column>
     <column>
      <property name="text">
-      <string>Points</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Tiebreak</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>Wins/Draws/Losses</string>
+      <string>Avg. ranking</string>
      </property>
     </column>
     <column>

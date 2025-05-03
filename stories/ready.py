@@ -19,7 +19,7 @@ class SetReadyStatus(Story):
         ready = bool(json_info['ready'])
         game = server_gamestate.gs.game_at_depth(json_info['depth'])
         player_name = game.player_controlled_by(user.username).name
-        if self.ongoing_match and json_info['depth'] == 0:
+        if game.ongoing_match and json_info['depth'] == 0:
             return precondition_failed('Cannot get ready for match while a match is ongoing.')
         if ready:
             if player_name not in game.ready_players:

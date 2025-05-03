@@ -11,9 +11,8 @@ from stories.ready import SetReadyStatus
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
 
-
-
 WaitingCondition = Literal['match_begin', 'match_end']
+
 
 class WaitingMenu(Ui_WaitingWindow):
     def __init__(self, client: 'AppClient', depth: int, wait_for: WaitingCondition):
@@ -21,6 +20,7 @@ class WaitingMenu(Ui_WaitingWindow):
         self.ready_status = True
         self.client = client
         self.depth = depth
+        # self.num_games_played_before = num_games_played_before
         self.wait_for = wait_for
         self.closed = False
 
@@ -37,7 +37,7 @@ class WaitingMenu(Ui_WaitingWindow):
     def information(self, title, msg):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
 
-    def ready(self, flag: bool=True):
+    def ready(self, flag: bool = True):
         self.ready_status = flag
         SetReadyStatus(self)()
 
@@ -52,17 +52,22 @@ class WaitingMenu(Ui_WaitingWindow):
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
-        if game.ongoing_match and self.wait_for == 'match_begin':
-            self.centralwidget.window().close()
+        if game is None:
             self.closed = True
-            self.client.open_manager_window(depth=self.depth + 1)
             return
-        if not game.ongoing_match and self.wait_for == 'match_end':
-            self.centralwidget.window().close()
-            self.closed = True
-            if not self.client.manager_menu_open(depth=self.depth):
-                self.client.open_manager_window(depth=self.depth)
-            return
+        if self.wait_for == 'match_begin':
+            if game.ongoing_match is not None:
+                self.centralwidget.window().close()
+                self.closed = True
+                self.client.open_manager_window(depth=self.depth + 1)
+                return
+        if self.wait_for == 'match_end':
+            if game.ongoing_match is None:
+                self.centralwidget.window().close()
+                self.closed = True
+                if not self.client.manager_menu_open(depth=self.depth):
+                    self.client.open_manager_window(depth=self.depth)
+                return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)
         table = self.otherUserTableWidget
