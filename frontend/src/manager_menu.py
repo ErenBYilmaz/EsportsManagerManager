@@ -44,8 +44,7 @@ class ManagerMenu(Ui_ManagerWindow):
         if self.game().ongoing_match is None:
             if not self.client.waiting_menu_open(depth=self.depth):
                 wait_for: WaitingCondition = 'match_begin' if self.microManageRadioButton.isChecked() else 'match_end'
-                waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for=wait_for)
-                waiting_ui.ready(True)
+                self.client.open_waiting_window(depth=self.depth, wait_for=wait_for)
         else:
             sub_game_window_open = self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1)
             if sub_game_window_open:
@@ -60,8 +59,7 @@ class ManagerMenu(Ui_ManagerWindow):
     def stop_micro_manage(self):
         with self.client.handling_errors():
             if not self.client.waiting_menu_open(depth=self.depth - 1):
-                waiting_ui = self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
-                waiting_ui.ready(True)
+                self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
             else:
                 self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
             self.try_close()

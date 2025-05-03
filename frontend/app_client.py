@@ -79,5 +79,6 @@ class AppClient(Client):
             waiting_window.show()
             self.waiting_menus.append(waiting_ui)
             self.open_windows.append(waiting_window)
+            waiting_ui.ready(True)
             self.check_game_state()
         return waiting_ui
