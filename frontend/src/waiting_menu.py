@@ -54,26 +54,35 @@ class WaitingMenu(Ui_WaitingWindow):
         else:
             self.readyToggleButton.setText('Your status: Not Ready')
 
+    def try_close(self):
+        self.closed = True
+        try:
+            self.centralwidget.window().close()
+        except RuntimeError as e:
+            if 'wrapped C/C++ object of type QWidget has been deleted' in str(e):
+                print('Window already closed. Ignoring error.')
+                return
+            raise
+
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
         if game is None:
-            self.closed = True
-            print('Game is None, closing waiting window')
+            print(f'Game ended at d={self.depth}, closing waiting window')
+            self.try_close()
             return
         if self.wait_for == 'match_begin':
             if game.ongoing_match is not None:
-                print('Game begins, closing waiting window')
-                self.centralwidget.window().close()
-                self.closed = True
+                print(f'Match begins at d={self.depth}, closing waiting window')
                 self.client.open_manager_window(depth=self.depth + 1)
+                self.try_close()
                 return
         if self.wait_for == 'match_end':
             if game.ongoing_match is None:
-                print('Game ended, closing waiting window')
-                self.centralwidget.window().close()
-                self.closed = True
+                print(f'Match ended at d={self.depth}, closing waiting window')
                 if not self.client.manager_menu_open(depth=self.depth):
+                    print(f'Re-opening manager window at d={self.depth}')
                     self.client.open_manager_window(depth=self.depth)
+                self.try_close()
                 return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)

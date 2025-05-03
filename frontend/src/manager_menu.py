@@ -57,27 +57,30 @@ class ManagerMenu(Ui_ManagerWindow):
                     self.client.open_waiting_window(depth=self.depth + 1, wait_for='match_end')
             return
 
-    def user_ready_for_end_of_game(self):
-        if self.game() is not None:
-            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_end')
-            waiting_ui.ready(True)
-
     def stop_micro_manage(self):
-        if not self.client.waiting_menu_open(depth=self.depth - 1):
-            waiting_ui = self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
-            waiting_ui.ready(True)
-        else:
-            self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
+        with self.client.handling_errors():
+            if not self.client.waiting_menu_open(depth=self.depth - 1):
+                waiting_ui = self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
+                waiting_ui.ready(True)
+            else:
+                self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
+            self.try_close()
+
+    def try_close(self):
         self.closed = True
-        self.centralwidget.window().close()
-        self.user_ready_for_end_of_game()
+        try:
+            self.centralwidget.window().close()
+        except RuntimeError as e:
+            if 'wrapped C/C++ object of type QWidget has been deleted' in str(e):
+                print('Window already closed. Ignoring error.')
+                return
+            raise
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
         if game is None:
-            self.closed = True
             print('Game ended, closing manager window')
-            self.centralwidget.window().close()
+            self.try_close()
             return
         players: typing.List[ESportsPlayer] = list(game.players.values())
         players = sorted(players, key=ESportsPlayer.rank_sorting_key)
