@@ -47,7 +47,8 @@ class ManagerMenu(Ui_ManagerWindow):
                 waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for=wait_for)
                 waiting_ui.ready(True)
         else:
-            if self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1):
+            sub_game_window_open = self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1)
+            if sub_game_window_open:
                 self.information('Error', f'Cannot get ready for a match while one is already ongoing. {self.my_player().tag_and_name()} is already playing.')
             else:
                 if self.microManageRadioButton.isChecked():
@@ -62,15 +63,22 @@ class ManagerMenu(Ui_ManagerWindow):
             waiting_ui.ready(True)
 
     def stop_micro_manage(self):
-        if not self.client.waiting_menu_open(depth=self.depth):
-            waiting_ui = self.client.open_waiting_window(depth=self.depth, wait_for='match_end')
+        if not self.client.waiting_menu_open(depth=self.depth - 1):
+            waiting_ui = self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
             waiting_ui.ready(True)
+        else:
+            self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
         self.closed = True
         self.centralwidget.window().close()
         self.user_ready_for_end_of_game()
 
     def update_gamestate(self, gs: AppGameState):
         game = gs.game_at_depth(self.depth)
+        if game is None:
+            self.closed = True
+            print('Game ended, closing manager window')
+            self.centralwidget.window().close()
+            return
         players: typing.List[ESportsPlayer] = list(game.players.values())
         players = sorted(players, key=ESportsPlayer.rank_sorting_key)
         self.leagueTableWidget.setRowCount(len(players))
@@ -81,5 +89,5 @@ class ManagerMenu(Ui_ManagerWindow):
             place_string = ' ' * add_leading_spaces + place_string
             self.leagueTableWidget.setItem(row_idx, 0, QtWidgets.QTableWidgetItem(place_string))
             self.leagueTableWidget.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.tag_and_name()))
-            self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(str(player.average_rank)))
+            self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(f'{player.average_rank:.1f}'))
             self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))

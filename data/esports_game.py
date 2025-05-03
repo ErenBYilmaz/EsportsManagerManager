@@ -89,6 +89,5 @@ class ESportsGame(BaseModel):
             player.visible_elo_sigma = new_ratings[0].sigma
 
         self.game_results.append(EsportsGameResult(ranking=[player.name for _, player in sorted_player_ranks]))
-        self.ongoing_match.ready_players.clear()
         self.ongoing_match = None
         self.ready_players.clear()

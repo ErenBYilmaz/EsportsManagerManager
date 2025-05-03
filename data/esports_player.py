@@ -20,7 +20,7 @@ class ESportsPlayer(BaseModel):
     visible_elo_sigma: float
 
     def rank_sorting_key(self):
-        return (-self.average_rank, -self.visible_elo, self.name[::-1][len(self.name)//2:])
+        return (self.average_rank, -self.visible_elo, self.name[::-1][len(self.name)//2:])
 
     def clan_tag(self):
         if self.controller is not None:

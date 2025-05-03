@@ -17,10 +17,14 @@ WaitingCondition = Literal['match_begin', 'match_end']
 class WaitingMenu(Ui_WaitingWindow):
     def __init__(self, client: 'AppClient', depth: int, wait_for: WaitingCondition):
         super().__init__()
+        # examples:
+        # depth=0, wait_for='match_begin': waiting for the match to begin
+        # depth=0, wait_for='match_end': waiting for the match to end
+        # depth=1, wait_for='match_begin': waiting for a submatch of the match to begin
+        # depth=2, wait_for='match_end': waiting for a submatch of a submatch of the match to end
         self.ready_status = True
         self.client = client
         self.depth = depth
-        # self.num_games_played_before = num_games_played_before
         self.wait_for = wait_for
         self.closed = False
 
@@ -54,15 +58,18 @@ class WaitingMenu(Ui_WaitingWindow):
         game = gs.game_at_depth(self.depth)
         if game is None:
             self.closed = True
+            print('Game is None, closing waiting window')
             return
         if self.wait_for == 'match_begin':
             if game.ongoing_match is not None:
+                print('Game begins, closing waiting window')
                 self.centralwidget.window().close()
                 self.closed = True
                 self.client.open_manager_window(depth=self.depth + 1)
                 return
         if self.wait_for == 'match_end':
             if game.ongoing_match is None:
+                print('Game ended, closing waiting window')
                 self.centralwidget.window().close()
                 self.closed = True
                 if not self.client.manager_menu_open(depth=self.depth):
