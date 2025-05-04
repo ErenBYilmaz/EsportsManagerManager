@@ -92,6 +92,20 @@ class WaitingMenu(Ui_WaitingWindow):
         for row_idx, player in enumerate(players):
             table.setItem(row_idx, 0, QtWidgets.QTableWidgetItem(player.controller))
             table.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.name))
-            is_ready = player.name in game.ready_players
-            table.setItem(row_idx, 2, QtWidgets.QTableWidgetItem('Ready' if is_ready else 'Not Ready'))
+            skip_until_match = game.ready_players[player.name].match_idx
+            skip_until_state = game.ready_players[player.name].match_state
+            if player.name in game.ready_players:
+                ready_string = 'Ready'
+            elif game.ongoing_match is None and skip_until_state == 'match_end':
+                ready_string = 'Skipping to end of match'
+            elif skip_until_match > len(game.game_results):
+                if skip_until_state == 'match_begin':
+                    ready_string = f'Skipping to beginning of match {skip_until_match}'
+                elif skip_until_state == 'match_end':
+                    ready_string = f'Skipping to end of match {skip_until_match}'
+                else:
+                    raise ValueError(skip_until_state)
+            else:
+                ready_string = 'Not Ready'
+            table.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(ready_string))
         self.update_button_text()
