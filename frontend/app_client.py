@@ -5,7 +5,8 @@ from PyQt5 import QtWidgets
 from frontend.client import Client
 from frontend.src.manager_menu import ManagerMenu
 from frontend.src.settings_menu import SettingsMenu
-from frontend.src.waiting_menu import WaitingMenu, WaitingCondition
+from frontend.src.waiting_menu import WaitingMenu
+from data.waiting_condition import WaitingCondition
 from lib.util import EBC
 
 

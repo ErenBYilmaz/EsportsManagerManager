@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from frontend.generated.manager_menu import Ui_ManagerWindow
-from frontend.src.waiting_menu import WaitingCondition
+from data.waiting_condition import WaitingCondition
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient

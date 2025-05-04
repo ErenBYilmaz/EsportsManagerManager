@@ -1,17 +1,15 @@
 import typing
-from typing import Literal
 
 from PyQt5 import QtWidgets
+from frontend.generated.waiting_menu import Ui_WaitingWindow
 
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
-from frontend.generated.waiting_menu import Ui_WaitingWindow
+from data.waiting_condition import WaitingCondition
 from stories.ready import SetReadyStatus
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
-
-WaitingCondition = Literal['match_begin', 'match_end']
 
 
 class WaitingMenu(Ui_WaitingWindow):
@@ -27,6 +25,27 @@ class WaitingMenu(Ui_WaitingWindow):
         self.depth = depth
         self.wait_for = wait_for
         self.closed = False
+
+    def condition_to_wait_for_start_of_match(self):
+        game = self.game()
+        matches_played = len(game.game_results)
+        if game.ongoing_match:
+            matches_played += 1
+        return WaitingCondition(
+            match_state='match_begin',
+            match_idx=matches_played
+        )
+
+    def condition_to_wait_for_next_end_of_match(self):
+        game = self.game()
+        matches_played = len(game.game_results)
+        return WaitingCondition(
+            match_state='match_end',
+            match_idx=matches_played
+        )
+
+    def game(self):
+        return self.client.local_gamestate.game_state.game_at_depth(self.depth)
 
     def closeEvent(self, _event):
         self.closed = True

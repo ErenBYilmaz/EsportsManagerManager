@@ -7,22 +7,24 @@ from config import NUM_PLAYERS_IN_TOURNAMENT
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game_result import EsportsGameResult
 from data.esports_player import ESportsPlayer, PlayerName
+from data.waiting_condition import WaitingCondition
 from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
 class ESportsGame(BaseModel):
     players: Dict[str, ESportsPlayer] = {}
     ongoing_match: Optional['ESportsGame'] = None
-    ready_players: List[PlayerName] = []
+    ready_players: Dict[PlayerName, WaitingCondition] = {}
+    skipping_players: List[PlayerName] = []
     game_results: List[EsportsGameResult] = []
 
     @field_validator('players')
     @classmethod
-    def check_names(cls, v):
-        for name, player in v.items():
+    def check_names(cls, players):
+        for name, player in players.items():
             if name != player.name:
                 raise ValueError(f"Player name '{player.name}' does not match key '{name}'")
-        return v
+        return players
 
     def create_players(self):
         player_names = random.sample(PLAYER_NAME_EXAMPLES, NUM_PLAYERS_IN_TOURNAMENT - len(self.players))
@@ -31,7 +33,7 @@ class ESportsGame(BaseModel):
                                    name=name,
                                    hidden_elo=1700,
                                    visible_elo=1700,
-                                   visible_elo_sigma=CustomTrueSkill().sigma,)
+                                   visible_elo_sigma=CustomTrueSkill().sigma, )
             self.players[player.name] = player
 
     def phase(self):
@@ -53,6 +55,33 @@ class ESportsGame(BaseModel):
 
     def everyone_ready(self):
         return set(p.name for p in self.non_ai_players()).issubset(self.ready_players)
+
+    def everyone_ready_for_match_start(self):
+        next_match_start_idx = len(self.game_results)
+        for player in self.non_ai_players():
+            not_ready_for_anything = player.name not in self.ready_players
+            if not_ready_for_anything:
+                return False
+            waiting_for = self.ready_players[player.name]
+            waits_for_already_finished_match_and_is_therefore_not_ready = waiting_for.match_idx < next_match_start_idx
+            if waits_for_already_finished_match_and_is_therefore_not_ready:
+                return False
+        return True
+
+    def everyone_ready_for_match_end(self):
+        next_match_end_idx = len(self.game_results)
+        if self.ongoing_match is not None:
+            next_match_end_idx -= 1
+        for player in self.non_ai_players():
+            not_ready_for_anything = player.name not in self.ready_players
+            if not_ready_for_anything:
+                return False
+            waiting_for = self.ready_players[player.name]
+            waits_for_already_finished_match_and_is_therefore_not_ready = waiting_for.match_idx < next_match_end_idx
+            if waits_for_already_finished_match_and_is_therefore_not_ready:
+                return False
+            if waiting_for.match_idx == next_match_end_idx and
+        return True
 
     def start_match(self):
         if self.ongoing_match is not None:
