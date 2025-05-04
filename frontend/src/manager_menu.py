@@ -41,9 +41,13 @@ class ManagerMenu(Ui_ManagerWindow):
         QtWidgets.QMessageBox.information(self.centralwidget, title, msg)
 
     def user_ready_for_next_tournament_game(self):
-        if self.game().ongoing_match is None:
+        game = self.game()
+        if game.ongoing_match is None:
             if not self.client.waiting_menu_open(depth=self.depth):
-                wait_for: WaitingCondition = 'match_begin' if self.microManageRadioButton.isChecked() else 'match_end'
+                if self.microManageRadioButton.isChecked():
+                    wait_for = game.condition_to_wait_for_next_start_of_match()
+                else:
+                    wait_for = game.condition_to_wait_for_next_end_of_match()
                 self.client.open_waiting_window(depth=self.depth, wait_for=wait_for)
         else:
             sub_game_window_open = self.client.manager_menu_open(depth=self.depth + 1) or self.client.waiting_menu_open(depth=self.depth + 1)
@@ -53,13 +57,13 @@ class ManagerMenu(Ui_ManagerWindow):
                 if self.microManageRadioButton.isChecked():
                     self.client.open_manager_window(depth=self.depth + 1)
                 else:
-                    self.client.open_waiting_window(depth=self.depth + 1, wait_for='match_end')
+                    self.client.open_waiting_window(depth=self.depth + 1, wait_for=game.condition_to_wait_for_next_end_of_match())
             return
 
     def stop_micro_manage(self):
         with self.client.handling_errors():
             if not self.client.waiting_menu_open(depth=self.depth - 1):
-                self.client.open_waiting_window(depth=self.depth - 1, wait_for='match_end')
+                self.client.open_waiting_window(depth=self.depth - 1, wait_for=self.game().condition_to_wait_for_next_end_of_match())
             else:
                 self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
             self.try_close()

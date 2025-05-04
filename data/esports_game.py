@@ -80,18 +80,17 @@ class ESportsGame(BaseModel):
             waits_for_already_finished_match_and_is_therefore_not_ready = waiting_for.match_idx < next_match_end_idx
             if waits_for_already_finished_match_and_is_therefore_not_ready:
                 return False
-            if waiting_for.match_idx == next_match_end_idx and
         return True
 
     def start_match(self):
         if self.ongoing_match is not None:
             raise RuntimeError("Match is already ongoing")
-        self.ready_players.clear()
         self.ongoing_match = ESportsGame()
         self.ongoing_match.create_players()
         for player, controller in zip(self.ongoing_match.players.values(), self.players.values()):
             player.controller = controller.controller
             player.manager = controller.name
+        self.cleanup_ready_players()
 
     def skip_to_end_of_ongoing_match(self):
         if self.ongoing_match is None:
@@ -119,4 +118,34 @@ class ESportsGame(BaseModel):
 
         self.game_results.append(EsportsGameResult(ranking=[player.name for _, player in sorted_player_ranks]))
         self.ongoing_match = None
-        self.ready_players.clear()
+        self.cleanup_ready_players()
+
+    def cleanup_ready_players(self):
+        for player_name, ready_for in list(self.ready_players.items()):
+            last_ended_game_idx = len(self.game_results) - 1
+            if ready_for.match_idx <= last_ended_game_idx:
+                print('Clearing ready status of player', player_name, ' because game has already ended.')
+                del self.ready_players[player_name]
+                continue
+            if ready_for.match_state == 'match_begin':
+                if ready_for.match_idx == last_ended_game_idx + 1:
+                    if self.ongoing_match is not None:
+                        print('Clearing ready status of player', player_name, ' because game has already started.')
+                        del self.ready_players[player_name]
+                        continue
+
+    def condition_to_wait_for_next_start_of_match(self):
+        matches_played = len(self.game_results)
+        if self.ongoing_match:
+            matches_played += 1
+        return WaitingCondition(
+            match_state='match_begin',
+            match_idx=matches_played
+        )
+
+    def condition_to_wait_for_next_end_of_match(self):
+        matches_played = len(self.game_results)
+        return WaitingCondition(
+            match_state='match_end',
+            match_idx=matches_played
+        )

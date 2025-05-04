@@ -26,24 +26,6 @@ class WaitingMenu(Ui_WaitingWindow):
         self.wait_for = wait_for
         self.closed = False
 
-    def condition_to_wait_for_start_of_match(self):
-        game = self.game()
-        matches_played = len(game.game_results)
-        if game.ongoing_match:
-            matches_played += 1
-        return WaitingCondition(
-            match_state='match_begin',
-            match_idx=matches_played
-        )
-
-    def condition_to_wait_for_next_end_of_match(self):
-        game = self.game()
-        matches_played = len(game.game_results)
-        return WaitingCondition(
-            match_state='match_end',
-            match_idx=matches_played
-        )
-
     def game(self):
         return self.client.local_gamestate.game_state.game_at_depth(self.depth)
 
