@@ -1,11 +1,11 @@
 import typing
 
 from PyQt5 import QtWidgets
-from frontend.generated.waiting_menu import Ui_WaitingWindow
 
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from data.waiting_condition import WaitingCondition
+from frontend.generated.waiting_menu import Ui_WaitingWindow
 from stories.ready import SetReadyStatus
 
 if typing.TYPE_CHECKING:
@@ -90,6 +90,8 @@ class WaitingMenu(Ui_WaitingWindow):
         if self.closed:
             self.try_close()
             return
+        my_player_name = game.player_controlled_by(self.client.local_gamestate.main_user_name).name
+        self.check_state_mismatch(game, my_player_name)
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)
         table = self.otherUserTableWidget
@@ -115,3 +117,12 @@ class WaitingMenu(Ui_WaitingWindow):
                     ready_string = 'Ready'
             table.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(ready_string))
         self.update_button_text()
+
+    def check_state_mismatch(self, game, my_player_name):
+        ready = self.ready_status
+        if not ready:
+            assert my_player_name not in game.ready_players, list(game.ready_players.keys())
+        server_state = game.ready_players[my_player_name]
+        ui_state = self.wait_for
+        assert server_state.match_state == ui_state.match_state, (server_state.match_state, ui_state.match_state)
+        assert server_state.match_idx == ui_state.match_idx, (server_state.match_idx, ui_state.match_idx)

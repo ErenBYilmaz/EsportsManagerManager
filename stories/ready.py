@@ -25,8 +25,7 @@ class SetReadyStatus(Story):
         wait_for: WaitingCondition = WaitingCondition.model_validate(json_info['wait_for'])
         player_name = game.player_controlled_by(user.username).name
         if ready:
-            if player_name not in game.ready_players:
-                game.ready_players[player_name] = wait_for
+            game.ready_players[player_name] = wait_for
         else:
             if player_name in game.ready_players:
                 del game.ready_players[player_name]

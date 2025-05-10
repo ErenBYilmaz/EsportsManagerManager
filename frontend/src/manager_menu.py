@@ -65,7 +65,8 @@ class ManagerMenu(Ui_ManagerWindow):
     def stop_micro_manage(self):
         with self.client.handling_errors():
             if not self.client.waiting_menu_open(depth=self.depth - 1):
-                self.client.open_waiting_window(depth=self.depth - 1, wait_for=self.game().condition_to_wait_for_next_end_of_match())
+                parent_game = self.client.local_gamestate.game_state.game_at_depth(self.depth)
+                self.client.open_waiting_window(depth=self.depth - 1, wait_for=parent_game.condition_to_wait_for_next_end_of_match())
             else:
                 self.client.waiting_menu_at_depth(self.depth - 1).ready(True)
             self.try_close()
