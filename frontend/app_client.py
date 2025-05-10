@@ -46,7 +46,7 @@ class AppClient(Client):
 
     def waiting_menu_at_depth(self, depth: int):
         for m in self.waiting_menus:
-            if m.depth == depth:
+            if m.depth == depth and not m.closed:
                 return m
 
     def open_settings_window(self):

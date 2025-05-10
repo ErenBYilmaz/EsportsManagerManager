@@ -66,28 +66,28 @@ class WaitingMenu(Ui_WaitingWindow):
             raise
 
     def update_gamestate(self, gs: AppGameState):
+        assert not self.closed
         game = gs.game_at_depth(self.depth)
         if game is None:
             print(f'Game ended at d={self.depth}, closing waiting window')
             self.try_close()
             return
-        done = False
-        if self.wait_for == 'match_begin':
+        if self.wait_for.match_state == 'match_begin':
             if game.ongoing_match is not None and self.wait_for.match_idx == len(game.game_results):
                 print(f'Match begins at d={self.depth}, closing waiting window')
-                done = True
+                self.closed = True
                 self.client.open_manager_window(depth=self.depth + 1)
             elif self.wait_for.match_idx < len(game.game_results):
                 print(f'Match already ended. Closing waiting window')
-                done = True
-        elif self.wait_for == 'match_end':
+                self.closed = True
+        elif self.wait_for.match_state == 'match_end':
             if self.wait_for.match_idx < len(game.game_results):
                 print(f'Match ended at d={self.depth}, closing waiting window')
                 if not self.client.manager_menu_open(depth=self.depth):
                     print(f'Re-opening manager window at d={self.depth}')
                     self.client.open_manager_window(depth=self.depth)
-                done = True
-        if done:
+                self.closed = True
+        if self.closed:
             self.try_close()
             return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
