@@ -71,20 +71,25 @@ class WaitingMenu(Ui_WaitingWindow):
             print(f'Game ended at d={self.depth}, closing waiting window')
             self.try_close()
             return
+        done = False
         if self.wait_for == 'match_begin':
-            if game.ongoing_match is not None:
+            if game.ongoing_match is not None and self.wait_for.match_idx == len(game.game_results):
                 print(f'Match begins at d={self.depth}, closing waiting window')
+                done = True
                 self.client.open_manager_window(depth=self.depth + 1)
-                self.try_close()
-                return
-        if self.wait_for == 'match_end':
-            if game.ongoing_match is None:
+            elif self.wait_for.match_idx < len(game.game_results):
+                print(f'Match already ended. Closing waiting window')
+                done = True
+        elif self.wait_for == 'match_end':
+            if self.wait_for.match_idx < len(game.game_results):
                 print(f'Match ended at d={self.depth}, closing waiting window')
                 if not self.client.manager_menu_open(depth=self.depth):
                     print(f'Re-opening manager window at d={self.depth}')
                     self.client.open_manager_window(depth=self.depth)
-                self.try_close()
-                return
+                done = True
+        if done:
+            self.try_close()
+            return
         players: typing.List[ESportsPlayer] = [p for p in game.players.values() if p.controller is not None]
         players = sorted(players, key=lambda p: p.controller)
         table = self.otherUserTableWidget

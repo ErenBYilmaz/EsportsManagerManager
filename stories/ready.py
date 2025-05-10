@@ -29,9 +29,9 @@ class SetReadyStatus(Story):
 
         if game.ongoing_match is None:
             if game.everyone_ready_for_match_start():
-                game.start_match()  # TODO clear ready status
+                game.start_match()
         if game.everyone_ready_for_match_end():
-            game.skip_to_end_of_ongoing_match()  # TODO clear ready status
+            game.skip_to_end_of_ongoing_match()
         assert not game.everyone_ready_for_match_start()
         assert not game.everyone_ready_for_match_end()
 

@@ -96,3 +96,4 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.tag_and_name()))
             self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(f'{player.average_rank:.1f}'))
             self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))
+            self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(str(len(game.game_results))))

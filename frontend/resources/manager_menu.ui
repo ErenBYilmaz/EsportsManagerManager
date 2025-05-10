@@ -194,6 +194,11 @@
       <string>ELO/MMR</string>
      </property>
     </column>
+    <column>
+     <property name="text">
+      <string>Matches played</string>
+     </property>
+    </column>
    </widget>
    <widget class="QPushButton" name="startMatchButton">
     <property name="geometry">
