@@ -31,7 +31,7 @@ class ESportsGame(BaseModel):
         for name in player_names:
             player = ESportsPlayer(controller=None,
                                    name=name,
-                                   hidden_elo=1700,
+                                   hidden_elo=1700 + random.normalvariate(0, 100),
                                    visible_elo=1700,
                                    visible_elo_sigma=CustomTrueSkill().sigma, )
             self.players[player.name] = player
@@ -107,9 +107,9 @@ class ESportsGame(BaseModel):
             player.average_rank = (player.average_rank * len(self.game_results) + rank) / (len(self.game_results) + 1)
 
         # update visible ratings
-        visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for _, player in sorted_player_ranks]
+        visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in players]
         assert len(visible_ratings) == len(self.players) == len(ranks)
-        new_ratings = ts.rate(visible_ratings)
+        new_ratings = ts.rate(visible_ratings, ranks)
         assert len(new_ratings) == len(players)
         for new_ratings, player in zip(new_ratings, players):
             assert len(new_ratings) == 1
