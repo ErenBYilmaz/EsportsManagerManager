@@ -149,3 +149,18 @@ class ESportsGame(BaseModel):
             match_state='match_end',
             match_idx=matches_played
         )
+
+    def previous_ranks(self, n: int, player_name: str):
+        relevant_results = self.game_results[-n:]
+        rankings = []
+        for result in reversed(relevant_results):
+            if player_name in result.ranking:
+                rankings.append(result.ranking.index(player_name) + 1)
+        assert len(rankings) <= n
+        return rankings
+
+    def previous_ranks_string(self, n: int, player_name: str):
+        ranks = self.previous_ranks(n, player_name)
+        if len(ranks) == 0:
+            return 'N/A'
+        return ' <- '.join(str(rank) for rank in ranks)
