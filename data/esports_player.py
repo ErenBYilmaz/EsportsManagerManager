@@ -1,9 +1,13 @@
+import random
 from typing import Optional
 
 from pydantic import BaseModel
 
+from config import DAYS_BETWEEN_MATCHES
 from data.clan_tag import clan_tag_from_name
+from data.custom_trueskill import CustomTrueSkill
 from network.my_types import UserName
+from resources.player_names import PLAYER_NAME_EXAMPLES
 
 PlayerName = str
 
@@ -19,8 +23,14 @@ class ESportsPlayer(BaseModel):
     visible_elo: float
     visible_elo_sigma: float
 
+    money: float = 0
+    health: float = 0
+    motivation: float = 0
+    days_until_next_match: int = DAYS_BETWEEN_MATCHES  # limits the number of actions that can be taken before the next match
+    retired: bool = False
+
     def rank_sorting_key(self):
-        return (self.average_rank, -self.visible_elo, self.name[::-1][len(self.name)//2:])
+        return (self.average_rank, -self.visible_elo, self.name[::-1][len(self.name) // 2:])
 
     def clan_tag(self):
         if self.controller is not None:
@@ -31,3 +41,17 @@ class ESportsPlayer(BaseModel):
 
     def tag_and_name(self):
         return f'[{self.clan_tag()}] {self.name}'
+
+    def hidden_skill(self):
+        return self.hidden_elo + self.health + self.motivation
+
+    @staticmethod
+    def create():
+        return ESportsPlayer(controller=None,
+                             name=random.choice(PLAYER_NAME_EXAMPLES),
+                             hidden_elo=1700 - 85 - 70 + random.normalvariate(0, 100),
+                             visible_elo=1700,
+                             health=85 + random.normalvariate(0, 5),
+                             motivation=70 + random.normalvariate(0, 10),
+                             visible_elo_sigma=CustomTrueSkill().sigma,
+                             money=1000, )

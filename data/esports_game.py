@@ -3,7 +3,7 @@ from typing import Dict, Optional, List
 
 from pydantic import BaseModel, field_validator
 
-from config import NUM_PLAYERS_IN_TOURNAMENT
+from config import NUM_BOTS_IN_TOURNAMENT
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game_result import EsportsGameResult
 from data.esports_player import ESportsPlayer, PlayerName
@@ -27,13 +27,8 @@ class ESportsGame(BaseModel):
         return players
 
     def create_players(self):
-        player_names = random.sample(PLAYER_NAME_EXAMPLES, NUM_PLAYERS_IN_TOURNAMENT - len(self.players))
-        for name in player_names:
-            player = ESportsPlayer(controller=None,
-                                   name=name,
-                                   hidden_elo=1700 + random.normalvariate(0, 100),
-                                   visible_elo=1700,
-                                   visible_elo_sigma=CustomTrueSkill().sigma, )
+        for _ in range(NUM_BOTS_IN_TOURNAMENT):
+            player = ESportsPlayer.create()
             self.players[player.name] = player
 
     def phase(self):
@@ -97,7 +92,7 @@ class ESportsGame(BaseModel):
             raise RuntimeError("No ongoing match to skip")
         ts = CustomTrueSkill()
         players = list(self.players.values())
-        true_ratings = [(ts.create_rating(mu=player.hidden_elo),) for player in players]
+        true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in players]
         ranks = ts.sample_ranks(true_ratings)
 
         # update average rank
