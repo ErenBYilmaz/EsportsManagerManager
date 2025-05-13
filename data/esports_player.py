@@ -7,7 +7,7 @@ from config import DAYS_BETWEEN_MATCHES
 from data.clan_tag import clan_tag_from_name
 from data.custom_trueskill import CustomTrueSkill
 from data.event_choice import ManagerChoice
-from data.game_event import GameEvent
+from data.game_event_base import GameEventBase
 from network.my_types import UserName
 from resources.player_names import PLAYER_NAME_EXAMPLES
 
@@ -30,7 +30,7 @@ class ESportsPlayer(BaseModel):
     motivation: float = 0
     days_until_next_match: int = DAYS_BETWEEN_MATCHES  # limits the number of actions that can be taken before the next match
     retired: bool = False
-    event_history: List[GameEvent] = []
+    event_history: List[GameEventBase] = []
     pending_choices: List[ManagerChoice] = []
 
     def rank_sorting_key(self):

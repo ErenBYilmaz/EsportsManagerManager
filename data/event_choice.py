@@ -1,10 +1,10 @@
 from typing import List
 
-from data.game_event import GameEvent
+from data.game_event_base import GameEventBase
 
 
-class ManagerChoice(GameEvent):
-    choices: List[GameEvent] = []
+class ManagerChoice(GameEventBase):
+    choices: List[GameEventBase] = []
     description: str = ''
 
     def apply(self):

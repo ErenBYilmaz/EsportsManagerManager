@@ -8,7 +8,6 @@ from data.custom_trueskill import CustomTrueSkill
 from data.esports_game_result import EsportsGameResult
 from data.esports_player import ESportsPlayer, PlayerName
 from data.waiting_condition import WaitingCondition
-from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
 class ESportsGame(BaseModel):

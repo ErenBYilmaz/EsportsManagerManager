@@ -1,27 +1,17 @@
 from typing import List
 
-from pydantic import BaseModel
-
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
+from data.game_event_base import GameEventBase
 
 
-class GameEvent(BaseModel):
+class GameEvent(GameEventBase):
     affected_game: ESportsGame
     affected_player: ESportsPlayer
 
-    def apply(self):
-        raise NotImplementedError("Abstract method")
 
-    def text_description(self):
-        return self.short_notation()
-
-    def short_notation(self):
-        raise NotImplementedError("Abstract method")
-
-
-class ComposedEvent(GameEvent):
-    events: List[GameEvent]
+class ComposedEvent(GameEventBase):
+    events: List[GameEventBase]
     description: str = ''
 
     def apply(self):
