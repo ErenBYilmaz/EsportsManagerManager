@@ -7,7 +7,10 @@ from data.esports_player import ESportsPlayer
 
 
 class GameEvent(BaseModel):
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
+    affected_game: ESportsGame
+    affected_player: ESportsPlayer
+
+    def apply(self):
         raise NotImplementedError("Abstract method")
 
     def text_description(self):
@@ -21,9 +24,9 @@ class ComposedEvent(GameEvent):
     events: List[GameEvent]
     description: str = ''
 
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
+    def apply(self):
         for event in self.events:
-            event.apply(game, player)
+            event.apply()
 
     def short_notation(self):
         return '\n'.join(event.short_notation() for event in self.events)
@@ -35,8 +38,8 @@ class ComposedEvent(GameEvent):
 class SkillChange(GameEvent):
     hidden_elo_change: float
 
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
-        player.hidden_elo += self.hidden_elo_change
+    def apply(self):
+        self.affected_player.hidden_elo += self.hidden_elo_change
 
     def short_notation(self):
         return f"{self.hidden_elo_change:+.1f} skill"
@@ -45,8 +48,8 @@ class SkillChange(GameEvent):
 class MoneyChange(GameEvent):
     money_change: float
 
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
-        player.money += self.money_change
+    def apply(self):
+        self.affected_player.money += self.money_change
 
     def short_notation(self):
         return f"{self.money_change:+.1f} €"
@@ -55,8 +58,8 @@ class MoneyChange(GameEvent):
 class HealthChange(GameEvent):
     health_change: float
 
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
-        player.health += self.health_change
+    def apply(self):
+        self.affected_player.health += self.health_change
 
     def short_notation(self):
         return f"{self.health_change:+.1f} health"
@@ -65,15 +68,17 @@ class HealthChange(GameEvent):
 class MotivationChange(GameEvent):
     motivation_change: float
 
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
-        player.motivation += self.motivation_change
+    def apply(self):
+        self.affected_player.motivation += self.motivation_change
 
     def short_notation(self):
         return f"{self.motivation_change:+.1f} motivation"
 
 
 class ReplacePlayerWithNewlyGeneratedPlayer(GameEvent):
-    def apply(self, game: ESportsGame, player: ESportsPlayer):
+    def apply(self):
+        player = self.affected_player
+        game = self.affected_game
         new_player = ESportsPlayer.create()
         new_player.controller = player.controller
         new_player.manager = player.manager

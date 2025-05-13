@@ -1,11 +1,12 @@
 import random
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
 from config import DAYS_BETWEEN_MATCHES
 from data.clan_tag import clan_tag_from_name
 from data.custom_trueskill import CustomTrueSkill
+from data.game_event import GameEvent
 from network.my_types import UserName
 from resources.player_names import PLAYER_NAME_EXAMPLES
 
@@ -28,6 +29,7 @@ class ESportsPlayer(BaseModel):
     motivation: float = 0
     days_until_next_match: int = DAYS_BETWEEN_MATCHES  # limits the number of actions that can be taken before the next match
     retired: bool = False
+    event_history: List[GameEvent] = []
 
     def rank_sorting_key(self):
         return (self.average_rank, -self.visible_elo, self.name[::-1][len(self.name) // 2:])
