@@ -248,7 +248,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>440</y>
+      <y>480</y>
       <width>171</width>
       <height>31</height>
      </rect>
@@ -274,7 +274,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>520</y>
+      <y>560</y>
       <width>171</width>
       <height>31</height>
      </rect>
@@ -287,7 +287,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>480</y>
+      <y>520</y>
       <width>171</width>
       <height>31</height>
      </rect>
@@ -398,6 +398,19 @@
     </property>
     <property name="text">
      <string>Managed player name</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="hireCoachButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>440</y>
+      <width>171</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hire a professional coach</string>
     </property>
    </widget>
   </widget>

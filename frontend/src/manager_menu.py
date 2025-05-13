@@ -1,3 +1,4 @@
+import functools
 import math
 import typing
 
@@ -27,6 +28,25 @@ class ManagerMenu(Ui_ManagerWindow):
         self.stopMicroManageButton.setVisible(self.depth > 0)
         self.startMatchButton.clicked.connect(self.user_ready_for_next_tournament_game)
         self.stopMicroManageButton.clicked.connect(self.stop_micro_manage)
+        for button in [
+            self.rankedButton,
+            self.unrankedButton,
+            self.botMatchButton,
+            self.streamingButton,
+            self.freeTimeButton,
+            self.motivationalSpeechButton,
+            self.analyzeMetaButton,
+            self.nutritionPlanButton,
+            self.newStrategyButton,
+            self.hireCoachButton,
+            self.sabotageButton,
+            self.dopingButton,
+            self.replacePlayerButton
+        ]:
+            button.clicked.connect(functools.partial(self.take_action, button.objectName()))
+
+    def take_action(self, action_name: str):
+        TakeAction(self, action_name)()
 
     def my_player(self):
         return self.game().player_controlled_by(self.client.local_gamestate.main_user().username)
