@@ -8,6 +8,7 @@ from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
 from frontend.generated.manager_menu import Ui_ManagerWindow
 from data.waiting_condition import WaitingCondition
+from stories.take_action import TakeManagementAction
 
 if typing.TYPE_CHECKING:
     from frontend.app_client import AppClient
@@ -46,7 +47,8 @@ class ManagerMenu(Ui_ManagerWindow):
             button.clicked.connect(functools.partial(self.take_action, button.objectName()))
 
     def take_action(self, action_name: str):
-        TakeAction(self, action_name)()
+        with self.client.handling_errors():
+            TakeManagementAction(self, action_name)()
 
     def my_player(self):
         return self.game().player_controlled_by(self.client.local_gamestate.main_user().username)

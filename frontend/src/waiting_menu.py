@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets
 
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
+from data.game_event_base import GameEventBase
 from data.waiting_condition import WaitingCondition
 from frontend.generated.waiting_menu import Ui_WaitingWindow
 from stories.ready import SetReadyStatus
@@ -126,3 +127,6 @@ class WaitingMenu(Ui_WaitingWindow):
         ui_state = self.wait_for
         assert server_state.match_state == ui_state.match_state, (server_state.match_state, ui_state.match_state)
         assert server_state.match_idx == ui_state.match_idx, (server_state.match_idx, ui_state.match_idx)
+
+    def handle_game_event(self, e: GameEventBase):
+        raise NotImplementedError('TO DO')

@@ -14,7 +14,6 @@ class ESportsGame(BaseModel):
     players: Dict[str, ESportsPlayer] = {}
     ongoing_match: Optional['ESportsGame'] = None
     ready_players: Dict[PlayerName, WaitingCondition] = {}
-    skipping_players: List[PlayerName] = []
     game_results: List[EsportsGameResult] = []
 
     @field_validator('players')
