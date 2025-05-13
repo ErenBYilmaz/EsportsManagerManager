@@ -32,7 +32,10 @@ class ComposedEvent(GameEvent):
         return '\n'.join(event.short_notation() for event in self.events)
 
     def text_description(self):
-        return self.description + '\n\n' + self.short_notation()
+        if self.description == '':
+            return self.short_notation()
+        else:
+            return self.description + '\n\n' + self.short_notation()
 
 
 class SkillChange(GameEvent):
@@ -91,3 +94,4 @@ class ReplacePlayerWithNewlyGeneratedPlayer(GameEvent):
 
     def short_notation(self):
         return f"Player replacement"
+

@@ -2,6 +2,7 @@ import typing
 
 from data import server_gamestate
 from data.waiting_condition import WaitingCondition
+from network.connection import precondition_failed
 from network.my_types import JSONInfo
 from stories.story import Story
 
@@ -23,7 +24,10 @@ class SetReadyStatus(Story):
         depth = json_info["depth"]
         game = server_gamestate.gs.game_at_depth(depth)
         wait_for: WaitingCondition = WaitingCondition.model_validate(json_info['wait_for'])
-        player_name = game.player_controlled_by(user.username).name
+        player = game.player_controlled_by(user.username)
+        player_name = player.name
+        if ready and player.pending_choices:
+            return precondition_failed('You can\'t be ready while you have pending choices to make.')
         if ready:
             game.ready_players[player_name] = wait_for
         else:

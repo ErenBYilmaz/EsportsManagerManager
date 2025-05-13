@@ -26,9 +26,13 @@ class TakeManagementAction(Story):
         game = server_gamestate.gs.game_at_depth(depth)
         player = game.player_controlled_by(user.username)
 
+        if player.pending_choices:
+            # pretend that the player did not know about that event yet and send it again
+            return {'new_events': [e.model_dump() for e in player.pending_choices], 'player_name': player.name}
         if player.days_until_next_match <= 0:
             return precondition_failed('You don\'t have enough time to take this action before the next tournament match. Better get ready.')
 
+        del game.ready_players[player.name]
         events_resulting_from_action = EventSampler().get_events_for_action(game, player, action_name)
         randomly_occurring_events = EventSampler().get_random_events(game, player)
         player.days_until_next_match -= 1
