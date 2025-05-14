@@ -81,11 +81,9 @@ class OptimizeNutritionPlanSampler(ActionSampler):
         if player.health < BASE_PLAYER_HEALTH:
             conditional_events.append(
                 ComposedEvent(
-                    description=f'After some analysis, you just pick the standard nutrition plan that everyone else is on.',
+                    description=f'After some analysis you just pick the standard nutrition plan that everyone else is on.',
                     events=[
-                        MoneyChange(money_change=-20),
                         HealthChange(health_change=+1),
-                        MotivationChange(motivation_change=+0.5),
                     ]
                 )
             )
@@ -221,6 +219,52 @@ class PlayUnrankedMatchesSampler(ActionSampler):
         ]
 
 
+class PlayBotMatchesSampler(ActionSampler):
+    action_name: Literal['ranked'] = 'botMatch'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        ts = CustomTrueSkill()
+        num_games = random.randint(5, 15)
+        player = player.model_copy()  # dont change the original player
+        player.visible_elo_sigma = ts.sigma
+        player_placements = []
+        bot_rating_step = 250
+        bot_elo = round(player.visible_elo / bot_rating_step + random.normalvariate(sigma=1)) * bot_rating_step
+        for _ in range(num_games):
+            random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
+            for o in random_opponents:
+                o.hidden_elo = bot_elo
+                o.visible_elo = o.hidden_skill()
+                o.visible_elo_sigma /= 10
+
+            match_players = [player] + random_opponents
+
+            ts = CustomTrueSkill()
+            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in match_players]
+            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in match_players]
+            ranks = ts.sample_ranks(true_ratings)
+            assert len(visible_ratings) == len(match_players) == len(ranks)
+            new_ratings = ts.rate(visible_ratings, ranks)
+            assert len(new_ratings) == len(match_players)
+            for new_ratings, p in zip(new_ratings, match_players):
+                assert len(new_ratings) == 1
+                p.visible_elo = new_ratings[0].mu
+                p.visible_elo_sigma = new_ratings[0].sigma
+
+            player_placements.append(ranks[0] + 1)
+
+        return [
+            ComposedEvent(
+                description=f'Bot-matches summary:\n\n'
+                            f'{num_games} matches played\n'
+                            f'{bot_elo:.0f} official bot rating\n'
+                            f'{numpy.mean(player_placements):.1f} average placement\n'
+                            f'{player.visible_elo:.0f} performance in those games',
+                events=[]
+            ),
+        ]
+
+
 class AnalyzeMatches(ActionSampler):
     action_name: Literal['analyzeMatches'] = 'analyzeMatches'
 
@@ -316,6 +360,7 @@ class EventSampler(BaseModel):
             FreeTimeSampler(),
             MotivationalSpeechSampler(),
             AnalyzeMatches(),
+            PlayBotMatchesSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
