@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
-from config import DAYS_BETWEEN_MATCHES, BASE_PLAYER_HEALTH
+from config import DAYS_BETWEEN_MATCHES, BASE_PLAYER_HEALTH, BASE_PLAYER_MOTIVATION
 from data.clan_tag import clan_tag_from_name
 from data.custom_trueskill import CustomTrueSkill
 from data.manager_choice import ManagerChoice
@@ -52,9 +52,9 @@ class ESportsPlayer(BaseModel):
     def create():
         return ESportsPlayer(controller=None,
                              name=random.choice(PLAYER_NAME_EXAMPLES),
-                             hidden_elo=1700 - 85 - 70 + random.normalvariate(0, 100),
+                             hidden_elo=1700 - BASE_PLAYER_HEALTH - BASE_PLAYER_MOTIVATION + random.normalvariate(0, 100),
                              visible_elo=1700,
                              health=BASE_PLAYER_HEALTH + random.normalvariate(0, 5),
-                             motivation=70 + random.normalvariate(0, 10),
+                             motivation=BASE_PLAYER_MOTIVATION + random.normalvariate(0, 10),
                              visible_elo_sigma=CustomTrueSkill().sigma,
                              money=1000, )

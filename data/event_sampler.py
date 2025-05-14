@@ -4,7 +4,7 @@ from typing import List, Literal
 import numpy
 from pydantic import BaseModel
 
-from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT
+from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIVATION
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
@@ -170,12 +170,44 @@ class PlayRankedMatchesSampler(ActionSampler):
         ]
 
 
+class FreeTimeSampler(ActionSampler):
+    action_name: Literal['freeTime'] = 'freeTime'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        ranked_result_event = random.choice(PlayRankedMatchesSampler().possible_events(game, player))
+        ranked_event = ComposedEvent(
+            description=f'{player.name} uses their free time to play some ranked matches.\n\n{ranked_result_event.text_description()}',
+            events=PlayRankedMatchesSampler().possible_events(game, player)
+        )
+        possible_events = [
+            ranked_event,
+            ComposedEvent(
+                description=f'{player.name} uses their free time to party hard.',
+                events=[
+                    HealthChange(health_change=-1),
+                    MotivationChange(motivation_change=+1),
+                ]
+            ),
+        ]
+        if player.motivation > BASE_PLAYER_MOTIVATION:
+            possible_events.append(
+                ComposedEvent(
+                    description=f'{player.name} uses their free time to study.',
+                    events=[
+                        SkillChange(hidden_elo_change=+1),
+                    ]
+                )
+            )
+        return possible_events
+
+
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
         return [
             HireCoachSampler(),
             OptimizeNutritionPlanSampler(),
             PlayRankedMatchesSampler(),
+            FreeTimeSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
