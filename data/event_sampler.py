@@ -201,6 +201,30 @@ class FreeTimeSampler(ActionSampler):
         return possible_events
 
 
+class MotivationalSpeechSampler(ActionSampler):
+    action_name: Literal['freeTime'] = 'motivationalSpeech'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        common_events = [
+            ComposedEvent(
+                description=f'{player.name} is inspired.',
+                events=[
+                    MotivationChange(motivation_change=+2),
+                ]
+            ),
+        ]
+        possible_events = [
+            *(common_events * 2),
+            ComposedEvent(
+                description=f'{player.name} is bored.',
+                events=[
+                    MotivationChange(motivation_change=-2),
+                ]
+            ),
+        ]
+        return possible_events
+
+
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
         return [
@@ -208,6 +232,7 @@ class EventSampler(BaseModel):
             OptimizeNutritionPlanSampler(),
             PlayRankedMatchesSampler(),
             FreeTimeSampler(),
+            MotivationalSpeechSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
