@@ -44,6 +44,8 @@ class TakeManagementAction(Story):
         player.days_until_next_match -= 1
 
         new_events: typing.List[GameEvent] = events_resulting_from_action + randomly_occurring_events
+        for e in new_events:
+            e.apply(game, player)
         return {'new_events': [e.to_json() for e in new_events], 'player_name': player.name}
 
     def known_event_types(self) -> typing.Dict[str, typing.Type[GameEvent]]:
@@ -62,8 +64,8 @@ class TakeManagementAction(Story):
     def action(self):
         response = self.to_server({'action_name': self.action_name, 'depth': self.ui.depth})
         new_events = response['new_events']
+        self.client().check_game_state()
         for event_data in new_events:
             e = GameEvent.from_json(event_data)
             assert isinstance(e, GameEvent)
             self.ui.handle_game_event(e)
-        self.client().check_game_state()

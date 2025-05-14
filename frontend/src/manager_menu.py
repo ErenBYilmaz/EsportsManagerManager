@@ -3,6 +3,7 @@ import math
 import typing
 
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QListWidgetItem
 
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
@@ -117,7 +118,8 @@ class ManagerMenu(Ui_ManagerWindow):
         players: typing.List[ESportsPlayer] = list(game.players.values())
         players = sorted(players, key=ESportsPlayer.rank_sorting_key)
         self.leagueTableWidget.setRowCount(len(players))
-        self.playerNameLabel.setText(self.my_player().name)
+        my_player = self.my_player()
+        self.playerNameLabel.setText(my_player.name)
         for row_idx, player in enumerate(players):
             place_string = '#' + str(row_idx + 1)
             add_leading_spaces = math.ceil(math.log(len(players), 10)) - len(str(row_idx + 1))
@@ -128,6 +130,13 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))
             self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(str(len(game.game_results))))
             self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(game.previous_ranks_string(n=3, player_name=player.name)))
+        self.statusWidget.clear()
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.days_until_next_match} days until next match'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.money} €'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.health} health'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.motivation} motivation'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.visible_elo:.0f} tournament performance'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.average_rank:.1f} avg. ranking'))
 
     def handle_game_event(self, e: GameEvent):
         self.information(

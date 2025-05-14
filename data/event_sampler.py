@@ -161,10 +161,10 @@ class PlayRankedMatchesSampler(ActionSampler):
         return [
             ComposedEvent(
                 description=f'Ranked matches summary:\n\n'
-                            f'{num_games} matches played.\n'
+                            f'{num_games} matches played\n'
                             f'{numpy.mean(player_placements):.1f} average placement\n'
                             f'{player.visible_elo:.0f} performance\n'
-                            f'{numpy.mean(opponent_ratings):.0f} average opponent rating.',
+                            f'{numpy.mean(opponent_ratings):.0f} average opponent rating',
                 events=[]
             ),
         ]

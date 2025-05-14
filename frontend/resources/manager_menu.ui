@@ -378,7 +378,7 @@
     <property name="geometry">
      <rect>
       <x>740</x>
-      <y>10</y>
+      <y>200</y>
       <width>151</width>
       <height>41</height>
      </rect>
@@ -411,6 +411,25 @@
     </property>
     <property name="text">
      <string>Hire a professional coach</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="statusWidget">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>10</y>
+      <width>201</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="showDropIndicator" stdset="0">
+     <bool>false</bool>
+    </property>
+    <property name="dragEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="defaultDropAction">
+     <enum>Qt::IgnoreAction</enum>
     </property>
    </widget>
   </widget>
