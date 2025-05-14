@@ -135,7 +135,7 @@ class ManagerMenu(Ui_ManagerWindow):
         self.statusWidget.clear()
         ts = CustomTrueSkill()
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.days_until_next_match} days until next match'))
-        self.statusWidget.addItem(QListWidgetItem(f'{my_player.money} €'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.money:.2f} €'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.health:.0f} health'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.motivation:.0f} motivation'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.visible_elo:.0f} tournament performance'))

@@ -24,7 +24,7 @@ from debug import debug
 from lib.print_exc_plus import print_exc_plus
 from lib.threading_timer_decorator import exit_after
 from lib.util import rename
-from network.routes import valid_post_routes
+from network.routes import valid_post_routes, read_only_routes
 
 FRONTEND_RELATIVE_PATH = './html'
 
@@ -70,8 +70,9 @@ def _process(path, json_request):
         else:
             bottle.response.status = 200
         if bottle.response.status_code == 200:
-            server_gamestate.gs.commit()
-            connection.push_messages_in_queue()
+            if valid_post_routes[path] not in read_only_routes:
+                server_gamestate.gs.commit()
+                connection.push_messages_in_queue()
         else:
             server_gamestate.gs.rollback()
         print('route=' + path, f't={time.perf_counter() - start:.4f}s,')

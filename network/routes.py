@@ -16,4 +16,6 @@ valid_post_routes: Dict[str, Type[Story]] = {
                                                         TakeManagementAction, ]
 }
 
+read_only_routes = [CheckGameState]
+
 push_message_types = set()
