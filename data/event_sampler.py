@@ -6,7 +6,7 @@ import numpy
 from pydantic import BaseModel
 from scipy.special import expit
 
-from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIVATION
+from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIVATION, BOT_RATING_STEP
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
@@ -229,8 +229,7 @@ class PlayBotMatchesSampler(ActionSampler):
         player = player.model_copy()  # dont change the original player
         player.visible_elo_sigma = ts.sigma
         player_placements = []
-        bot_rating_step = 250
-        bot_elo = round(player.visible_elo / bot_rating_step + random.normalvariate(sigma=1)) * bot_rating_step
+        bot_elo = round(player.visible_elo / BOT_RATING_STEP + random.normalvariate(sigma=1)) * BOT_RATING_STEP
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
@@ -354,7 +353,6 @@ class MotivationalSpeechSampler(ActionSampler):
 class StreamingSampler(ActionSampler):
     action_name: Literal['streaming'] = 'streaming'
 
-
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
         sub_value_min = 1.49 / 1.12
         sub_value_max = 4.99 / 1.12
@@ -368,24 +366,24 @@ class StreamingSampler(ActionSampler):
             'copyright infringement',
             'drug-related content',
         ])
-        common_events= [
+        common_events = [
             ComposedEvent(
                 description=f'{player.name} was gifted {num_subs} subs.',
                 events=[
                     MoneyChange(money_change=value),
-                    MotivationChange(motivation_change=+random.randint(1,3)),
+                    MotivationChange(motivation_change=+random.randint(1, 3)),
                 ]
             ),
             ComposedEvent(
                 description=f'{player.name} had fun during the stream.',
                 events=[
-                    MotivationChange(motivation_change=+random.randint(1,3)),
+                    MotivationChange(motivation_change=+random.randint(1, 3)),
                 ]
             ),
             ComposedEvent(
                 description=f'Almost nobody visited the stream.',
                 events=[
-                    MotivationChange(motivation_change=-random.randint(1,3)),
+                    MotivationChange(motivation_change=-random.randint(1, 3)),
                 ]
             ),
             ComposedEvent(
@@ -395,7 +393,7 @@ class StreamingSampler(ActionSampler):
             ComposedEvent(
                 description=f'{player.name} learned something during the stream.',
                 events=[
-                    SkillChange(hidden_elo_change=+random.randint(1,10) / 10),
+                    SkillChange(hidden_elo_change=+random.randint(1, 10) / 10),
                 ]
             ),
         ]
@@ -410,11 +408,70 @@ class StreamingSampler(ActionSampler):
             ComposedEvent(
                 description=f'{player.name} is being sued for playing the wrong music on stream (copyright infringement).',
                 events=[
-                    MoneyChange(money_change=-random.randint(50, 150)),
+                    MoneyChange(money_change=-random.randint(50, 500)),
                 ]
             ),
         ]
         return possible_events
+
+
+class AnalyzeMetaSampler(ActionSampler):
+    action_name: Literal['analyzeMeta'] = 'analyzeMeta'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        strategies = [
+            'aggressive',
+            'defensive',
+            'balanced',
+            'cheese',
+            'cheating',
+        ]
+        possible_findings = [
+            'Getting sued for copyright infringement when streaming can cost a lot of money.',
+            'Being gifted subs while streaming can yield insane amounts of money.',
+            'Professional coaches typically seem to be expensive, but often worth it.',
+            'Playing ranked matches outside of the tournament allows estimating a players skill without risk of losing points.',
+            'Estimating skill from playing ranked matches can be difficult if opponents are much weaker (or stronger).',
+            'Playing bot matches outside of the tournament allows estimating a players skill without risk of losing points.',
+            f'Esports Manager Manager bots are available in skill rating steps of {BOT_RATING_STEP}.',
+            'Opponents in ranked matches are typically weaker than in the tournament.',
+            'Opponents in unranked matches are typically weaker than in the tournament.',
+            'Free time can be relaxing.',
+            'An optimized nutrition plan can improve well-being, but may also cost extra money.',
+            'Highly motivated players typically perform better than less motivated players of the same skill level.',
+            'Healthy players typically perform better than sick players of the same skill level.',
+            'Tournament rankings are computed from played tournament games and not always accurate.',
+            *[
+                f'Recently, {s1} strategies seems to perform similarly well as {s2} strategies, maybe slightly {random.choice(["better", "worse"])}.'
+                for s1 in strategies
+                for s2 in strategies
+                if s1 != s2
+                if random.random() < 0.2
+            ],
+        ]
+        usefulness = {
+            'The found results seem to be very useful.': +2,
+            'The found results seem to be moderately useful.': +0.5,
+            f'{player.name} was already aware of these facts.': +0,
+            'You were already aware of these facts.': +0,
+        }
+        usefulness_str = random.choice(list(usefulness.keys()))
+
+        description = f'Metagame analysis summary:\n\n'
+        description += '\n'.join(f'  {f_idx+1}. {f}'
+                                 for f_idx, f in enumerate(random.sample(possible_findings, k=random.randint(2, 4))))
+        description += '\n\n' + usefulness_str
+
+        common_events = [
+            ComposedEvent(
+                description=description,
+                events=[
+                    SkillChange(hidden_elo_change=usefulness[usefulness_str]),
+                ]
+            ),
+        ]
+        return common_events
+
 
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
@@ -428,6 +485,7 @@ class EventSampler(BaseModel):
             AnalyzeMatches(),
             PlayBotMatchesSampler(),
             StreamingSampler(),
+            AnalyzeMetaSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
