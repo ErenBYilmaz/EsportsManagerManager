@@ -35,6 +35,13 @@ class SkillChange(GameEvent):
         return f"{self.hidden_elo_change:+.1f} skill"
 
 
+class HiddenSkillChange(SkillChange):
+    order: int
+
+    def short_notation(self):
+        return f"+-??? skill (probably around +-{self.order})"
+
+
 class MoneyChange(GameEvent):
     money_change: float
 

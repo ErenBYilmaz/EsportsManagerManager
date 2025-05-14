@@ -10,7 +10,7 @@ from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIV
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
-from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange
+from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange, HiddenSkillChange
 from data.game_event_base import GameEvent
 
 
@@ -424,7 +424,6 @@ class AnalyzeMetaSampler(ActionSampler):
             'defensive',
             'balanced',
             'cheese',
-            'cheating',
         ]
         possible_findings = [
             'Getting sued for copyright infringement when streaming can cost a lot of money.',
@@ -446,7 +445,7 @@ class AnalyzeMetaSampler(ActionSampler):
                 for s1 in strategies
                 for s2 in strategies
                 if s1 != s2
-                if random.random() < 0.2
+                if random.random() < 0.25
             ],
         ]
         usefulness = {
@@ -454,23 +453,65 @@ class AnalyzeMetaSampler(ActionSampler):
             'The found results seem to be moderately useful.': +0.5,
             f'{player.name} was already aware of these facts.': +0,
             'You were already aware of these facts.': +0,
+            'You are unsure how useful this knowledge will be.': random.randint(-3, 3),
         }
         usefulness_str = random.choice(list(usefulness.keys()))
 
         description = f'Metagame analysis summary:\n\n'
-        description += '\n'.join(f'  {f_idx+1}. {f}'
+        description += '\n'.join(f'  {f_idx + 1}. {f}'
                                  for f_idx, f in enumerate(random.sample(possible_findings, k=random.randint(2, 4))))
         description += '\n\n' + usefulness_str
+
+        if 'unsure' in usefulness_str:
+            change = HiddenSkillChange(hidden_elo_change=usefulness[usefulness_str], order=2)
+        else:
+            change = SkillChange(hidden_elo_change=usefulness[usefulness_str])
 
         common_events = [
             ComposedEvent(
                 description=description,
-                events=[
-                    SkillChange(hidden_elo_change=usefulness[usefulness_str]),
-                ]
+                events=[change]
             ),
         ]
         return common_events
+
+
+class NewStrategy(ActionSampler):
+    action_name: Literal['newStrategy'] = 'newStrategy'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        strategies = [
+            'aggressive',
+            'defensive',
+            'balanced',
+            'cheese',
+        ]
+        resources = [
+            'a lot of money',
+            'a very good health condition',
+            'a high motivation value',
+            'skill improvements',
+        ]
+        new_strategy_messages = [
+            'You have got an idea how to exploit the current meta.',
+            f'You have got an idea for a strategy that may work well against {random.choice(strategies)} strategies.',
+            f'You think you have found a way to improve your skill on {random.choice(strategies)} strategies.',
+            f'You think you have found a method to get {random.choice(resources)} quickly.',
+        ]
+        return [
+            ComposedEvent(
+                description=random.choice(new_strategy_messages) + '\nYou are not sure if it will work, but you decide to use it in future matches anyways.',
+                events=[
+                    HiddenSkillChange(hidden_elo_change=random.randint(-9, 11), order=5),
+                ]
+            ),
+            ComposedEvent(
+                description='No matter how long you think, you just have no inspiring idea of what you could try out.',
+                events=[
+                    SkillChange(hidden_elo_change=+0),
+                ]
+            ),
+        ]
 
 
 class EventSampler(BaseModel):
@@ -486,6 +527,7 @@ class EventSampler(BaseModel):
             PlayBotMatchesSampler(),
             StreamingSampler(),
             AnalyzeMetaSampler(),
+            NewStrategy(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
