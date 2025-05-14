@@ -133,6 +133,41 @@ class TestTrueSkill(unittest.TestCase):
         print(player_1_vs_63_estimated_win_probability)
         assert player_1_vs_63_estimated_win_probability < 0.05
 
+    # def test_sampling_ranks_does_not_systematically_misjudge_after_just_a_few_games(self):
+    #     ts = CustomTrueSkill()
+    #     num_players = 64
+    #     num_games = 10
+    #     num_tests = 100
+    #     initial_spread = 640
+    #     unrated_top_half_player_rating_index = random.randint(0, num_players // 2 - 1)
+    #     hidden_ratings = [(ts.create_rating(ts.mu - initial_spread / 2 + player_idx * initial_spread / num_players),)
+    #                       for player_idx in range(num_players)]
+    #     visible_ratings = [(ts.create_rating(hidden_ratings[player_idx][0].mu),)
+    #                        # if player_idx != unrated_top_half_player_rating_index
+    #                        # else (ts.create_rating(ts.mu),)
+    #                        for player_idx in range(num_players)]
+    #
+    #     deltas = []
+    #     for _ in tqdm.tqdm(range(num_tests)):
+    #         for i in range(num_games):
+    #             results = ts.sample_ranks(hidden_ratings)
+    #             visible_ratings = ts.rate(visible_ratings, results)
+    #
+    #         delta_mus = []
+    #         for i, ((hidden_rating,), (visible_rating,)) in enumerate(zip(hidden_ratings, visible_ratings)):
+    #             delta_mu = hidden_rating.mu - visible_rating.mu
+    #             # print(f"Player {i}: mu={hidden_rating.mu:.1f}, sigma={hidden_rating.sigma:.1f}, delta_mu={delta_mu :.1f}, delta_sigma={hidden_rating.sigma - visible_rating.sigma:.1f}")
+    #             delta_mus.append(delta_mu)
+    #
+    #         good_player_delta_mu = delta_mus[unrated_top_half_player_rating_index]
+    #         deltas.append(good_player_delta_mu)
+    #     result = ttest_1samp(deltas, popmean=0, alternative='two-sided')
+    #     print(result.statistic)
+    #     print(result.confidence_interval(0.95))
+    #     print(result.pvalue)
+    #     self.assertGreater(result.pvalue, 0.05)
+
+
     def test_sampling_ranks_converges_again_after_skill_change_if_sigma_is_reset(self):
         ts = CustomTrueSkill()
         num_players = 64

@@ -21,7 +21,7 @@ class ESportsPlayer(BaseModel):
     average_rank: float = 0
 
     hidden_elo: float
-    visible_elo: float
+    visible_elo: float  # typically close to hidden_elo + health + motivation
     visible_elo_sigma: float
 
     money: float = 0

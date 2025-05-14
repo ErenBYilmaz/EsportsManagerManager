@@ -24,7 +24,7 @@ class CustomTrueSkill(TrueSkill):
     def sample_ranks(self, rating_groups: List[Tuple[Rating]]):
         performances = [
             sum([
-                random.normalvariate(rating.mu, self.beta)
+                self.sample_performance(rating.mu)
                 for rating in rating_group
             ])
             for rating_group in rating_groups
@@ -35,3 +35,6 @@ class CustomTrueSkill(TrueSkill):
             for p in performances
         ]
         return ranks
+
+    def sample_performance(self, mu: float):
+        return random.normalvariate(mu, self.beta)

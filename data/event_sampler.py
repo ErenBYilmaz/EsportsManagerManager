@@ -1,9 +1,11 @@
 import random
-from typing import List, Literal, Tuple
+from typing import List, Literal
 
+import numpy
 from pydantic import BaseModel
 
-from config import BASE_PLAYER_HEALTH
+from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT
+from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
 from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange
@@ -122,11 +124,58 @@ class OptimizeNutritionPlanSampler(ActionSampler):
         return results
 
 
+class PlayRankedMatchesSampler(ActionSampler):
+    action_name: Literal['ranked'] = 'ranked'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        ts = CustomTrueSkill()
+        num_games = random.randint(5, 15)
+        player = player.model_copy()  # dont change the original player
+        player.visible_elo_sigma = ts.sigma
+        player_placements = []
+        opponent_ratings = []
+        for _ in range(num_games):
+            random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
+            for o in random_opponents:
+                o.hidden_elo -= 200  # those randoms are simply not as good as us professionals
+                o.visible_elo = o.hidden_skill()
+                o.visible_elo_sigma /= 10
+                opponent_ratings.append(o.visible_elo)
+
+            unranked_game_players = [player] + random_opponents
+
+            ts = CustomTrueSkill()
+            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in unranked_game_players]
+            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in unranked_game_players]
+            ranks = ts.sample_ranks(true_ratings)
+            assert len(visible_ratings) == len(unranked_game_players) == len(ranks)
+            new_ratings = ts.rate(visible_ratings, ranks)
+            assert len(new_ratings) == len(unranked_game_players)
+            for new_ratings, p in zip(new_ratings, unranked_game_players):
+                assert len(new_ratings) == 1
+                p.visible_elo = new_ratings[0].mu
+                p.visible_elo_sigma = new_ratings[0].sigma
+
+            player_placements.append(ranks[0] + 1)
+
+        return [
+            ComposedEvent(
+                description=f'Ranked matches summary:\n\n'
+                            f'{num_games} matches played.\n'
+                            f'{numpy.mean(player_placements):.1f} average placement\n'
+                            f'{player.visible_elo:.0f} performance\n'
+                            f'{numpy.mean(opponent_ratings):.0f} average opponent rating.',
+                events=[]
+            ),
+        ]
+
+
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
         return [
             HireCoachSampler(),
             OptimizeNutritionPlanSampler(),
+            PlayRankedMatchesSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
