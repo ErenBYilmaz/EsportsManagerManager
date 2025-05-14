@@ -138,21 +138,22 @@ class PlayRankedMatchesSampler(ActionSampler):
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
-                o.hidden_elo -= 100  # those randoms are simply not as good as us professionals
+                o.hidden_elo -= 90  # those randoms are simply not as good as us professionals
+                o.hidden_elo += random.normalvariate(sigma=100)  # but there is more fluctuation
                 o.visible_elo = o.hidden_skill()
                 o.visible_elo_sigma /= 10
                 opponent_ratings.append(o.visible_elo)
 
-            unranked_game_players = [player] + random_opponents
+            match_players = [player] + random_opponents
 
             ts = CustomTrueSkill()
-            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in unranked_game_players]
-            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in unranked_game_players]
+            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in match_players]
+            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in match_players]
             ranks = ts.sample_ranks(true_ratings)
-            assert len(visible_ratings) == len(unranked_game_players) == len(ranks)
+            assert len(visible_ratings) == len(match_players) == len(ranks)
             new_ratings = ts.rate(visible_ratings, ranks)
-            assert len(new_ratings) == len(unranked_game_players)
-            for new_ratings, p in zip(new_ratings, unranked_game_players):
+            assert len(new_ratings) == len(match_players)
+            for new_ratings, p in zip(new_ratings, match_players):
                 assert len(new_ratings) == 1
                 p.visible_elo = new_ratings[0].mu
                 p.visible_elo_sigma = new_ratings[0].sigma
@@ -164,7 +165,7 @@ class PlayRankedMatchesSampler(ActionSampler):
                 description=f'Ranked matches summary:\n\n'
                             f'{num_games} matches played\n'
                             f'{numpy.mean(player_placements):.1f} average placement\n'
-                            f'{player.visible_elo:.0f} performance\n'
+                            f'{player.visible_elo:.0f} performance in those games\n'
                             f'{numpy.mean(opponent_ratings):.0f} average opponent rating',
                 events=[]
             ),
@@ -187,10 +188,10 @@ class PlayUnrankedMatchesSampler(ActionSampler):
                 o.hidden_elo -= 100  # those randoms are simply not as good as us professionals
                 opponent_ratings.append(o.visible_elo)
 
-            unranked_game_players = [player] + random_opponents
+            match_players = [player] + random_opponents
 
             ts = CustomTrueSkill()
-            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in unranked_game_players]
+            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in match_players]
             ranks = ts.sample_ranks(true_ratings)
             player_placements.append(ranks[0] + 1)
 
@@ -240,7 +241,8 @@ class AnalyzeMatches(ActionSampler):
                             f'{blunders} blunders\n'
                             f'{questionable_decisions} questionable decisions\n'
                             f'{excellent_decisions} excellent decisions\n'
-                            f'{lessons_learned:.0f} lessons learned\n\n',
+                            f'-----------------------\n'
+                            f'{player.name}: {lessons_learned:.0f} lesson(s) learned\n\n',
                 events=[
                     MotivationChange(motivation_change=boredom),
                     SkillChange(hidden_elo_change=lessons_learned),
