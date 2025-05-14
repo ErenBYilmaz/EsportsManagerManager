@@ -1,3 +1,4 @@
+import math
 import random
 from typing import List, Literal
 
@@ -350,6 +351,71 @@ class MotivationalSpeechSampler(ActionSampler):
         return possible_events
 
 
+class StreamingSampler(ActionSampler):
+    action_name: Literal['streaming'] = 'streaming'
+
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        sub_value_min = 1.49 / 1.12
+        sub_value_max = 4.99 / 1.12
+        num_subs = round(math.pow(10, random.expovariate(1.5))) + 1
+        values = numpy.random.uniform(low=sub_value_min, high=sub_value_max, size=num_subs)
+        values = numpy.around(values, decimals=2)
+        value = numpy.sum(values).item()
+        demonetization_reason = random.choice([
+            'nudity',
+            'inappropriate language',
+            'copyright infringement',
+            'drug-related content',
+        ])
+        common_events= [
+            ComposedEvent(
+                description=f'{player.name} was gifted {num_subs} subs.',
+                events=[
+                    MoneyChange(money_change=value),
+                    MotivationChange(motivation_change=+random.randint(1,3)),
+                ]
+            ),
+            ComposedEvent(
+                description=f'{player.name} had fun during the stream.',
+                events=[
+                    MotivationChange(motivation_change=+random.randint(1,3)),
+                ]
+            ),
+            ComposedEvent(
+                description=f'Almost nobody visited the stream.',
+                events=[
+                    MotivationChange(motivation_change=-random.randint(1,3)),
+                ]
+            ),
+            ComposedEvent(
+                description=f'{player.name} was not very entertaining today.',
+                events=[]
+            ),
+            ComposedEvent(
+                description=f'{player.name} learned something during the stream.',
+                events=[
+                    SkillChange(hidden_elo_change=+random.randint(1,10) / 10),
+                ]
+            ),
+        ]
+        possible_events = [
+            *(common_events * 2),
+            ComposedEvent(
+                description=f'Today\'s stream was demonetized with the following allegation:\n"{demonetization_reason}"',
+                events=[
+                    MoneyChange(money_change=-random.randint(2, 5)),
+                ]
+            ),
+            ComposedEvent(
+                description=f'{player.name} is being sued for playing the wrong music on stream (copyright infringement).',
+                events=[
+                    MoneyChange(money_change=-random.randint(50, 150)),
+                ]
+            ),
+        ]
+        return possible_events
+
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
         return [
@@ -361,6 +427,7 @@ class EventSampler(BaseModel):
             MotivationalSpeechSampler(),
             AnalyzeMatches(),
             PlayBotMatchesSampler(),
+            StreamingSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
