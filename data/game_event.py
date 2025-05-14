@@ -34,7 +34,18 @@ class SkillChange(GameEvent):
 
     def short_notation(self):
         ts = CustomTrueSkill()
-        return f"{self.hidden_elo_change:+.1f} skill ({ts.one_on_one_score_ratio(self.hidden_elo_change)-1:+.1%})"
+        return f"{self.hidden_elo_change:+.1f} skill ({ts.one_on_one_score_ratio(self.hidden_elo_change) - 1:+.1%})"
+
+
+class EventAffectingOtherPlayer(GameEvent):
+    player_name: str
+    event: GameEvent
+
+    def apply(self, game: ESportsGame, player: ESportsPlayer):
+        self.event.apply(game, game.players[self.player_name])
+
+    def short_notation(self):
+        return f"{self.event.short_notation()} for {self.player_name}"
 
 
 class HiddenSkillChange(SkillChange):
@@ -61,7 +72,8 @@ class HealthChange(GameEvent):
         player.health += self.health_change
 
     def short_notation(self):
-        return f"{self.health_change:+.1f} health"
+        ts = CustomTrueSkill()
+        return f"{self.health_change:+.1f} health ({ts.one_on_one_score_ratio(self.health_change) - 1:+.1%})"
 
 
 class MotivationChange(GameEvent):
@@ -71,4 +83,5 @@ class MotivationChange(GameEvent):
         player.motivation += self.motivation_change
 
     def short_notation(self):
-        return f"{self.motivation_change:+.1f} motivation"
+        ts = CustomTrueSkill()
+        return f"{self.motivation_change:+.1f} motivation ({ts.one_on_one_score_ratio(self.motivation_change) - 1:+.1%})"

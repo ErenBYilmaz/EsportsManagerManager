@@ -10,7 +10,7 @@ from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIV
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
-from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange, HiddenSkillChange
+from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange, HiddenSkillChange, EventAffectingOtherPlayer
 from data.game_event_base import GameEvent
 
 
@@ -138,7 +138,9 @@ class PlayRankedMatchesSampler(ActionSampler):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
                 o.hidden_elo -= 90  # those randoms are simply not as good as us professionals
-                o.hidden_elo += random.normalvariate(sigma=100)  # but there is more fluctuation
+                if o.hidden_elo > player.visible_elo:
+                    o.hidden_elo = player.visible_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
+                o.hidden_elo += random.normalvariate(sigma=100)  # there is some extra skill fluctuation
                 o.visible_elo = o.hidden_skill()
                 o.visible_elo_sigma /= 10
                 opponent_ratings.append(o.visible_elo)
@@ -180,12 +182,13 @@ class PlayUnrankedMatchesSampler(ActionSampler):
         player = player.model_copy()  # dont change the original player
         player.visible_elo_sigma = ts.sigma
         player_placements = []
-        opponent_ratings = []
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
-                o.hidden_elo -= 100  # those randoms are simply not as good as us professionals
-                opponent_ratings.append(o.visible_elo)
+                o.hidden_elo -= 90  # those randoms are simply not as good as us professionals
+                if o.hidden_elo > player.visible_elo:
+                    o.hidden_elo = player.visible_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
+                o.hidden_elo += random.normalvariate(sigma=100)  # there is some extra skill fluctuation
 
             match_players = [player] + random_opponents
 
@@ -514,6 +517,47 @@ class NewStrategy(ActionSampler):
         ]
 
 
+class Sabotage(ActionSampler):
+    action_name: Literal['sabotage'] = 'sabotage'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        opponents = [p for p in game.players.values() if p.name != player.name]
+        opponent: ESportsPlayer = random.choice(opponents)
+        return [
+            ComposedEvent(
+                description=f'{opponent.tag_and_name()} has no idea why, but their strategy suddenly does not work so well any more.',
+                events=[
+                    EventAffectingOtherPlayer(
+                        player_name=opponent.name,
+                        event=SkillChange(hidden_elo_change=-random.randint(5, 20))
+                    ),
+                ]
+            ),
+            ComposedEvent(
+                description=f'{opponent.tag_and_name()} does not feel very well.',
+                events=[
+                    EventAffectingOtherPlayer(
+                        player_name=opponent.name,
+                        event=HealthChange(health_change=-random.randint(5, 20))
+                    ),
+                ]
+            ),
+            ComposedEvent(
+                description=f'{opponent.tag_and_name()} caught you interfering with their game and is furious.',
+                events=[
+                    EventAffectingOtherPlayer(
+                        player_name=opponent.name,
+                        event=MotivationChange(motivation_change=+random.randint(10, 40))
+                    ),
+                ]
+            ),
+            ComposedEvent(
+                description=f'You have almost been caught trying to sabotage {opponent.tag_and_name()} and decide not to to risk it today.',
+                events=[]
+            ),
+        ]
+
+
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
         return [
@@ -528,6 +572,7 @@ class EventSampler(BaseModel):
             StreamingSampler(),
             AnalyzeMetaSampler(),
             NewStrategy(),
+            Sabotage(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:

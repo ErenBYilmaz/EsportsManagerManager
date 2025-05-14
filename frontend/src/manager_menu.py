@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem
 
 from data.app_gamestate import AppGameState
+from data.custom_trueskill import CustomTrueSkill
 from data.esports_player import ESportsPlayer
 from data.game_event_base import GameEvent
 from frontend.generated.manager_menu import Ui_ManagerWindow
@@ -132,6 +133,7 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(str(len(game.game_results))))
             self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(game.previous_ranks_string(n=3, player_name=player.name)))
         self.statusWidget.clear()
+        ts = CustomTrueSkill()
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.days_until_next_match} days until next match'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.money} €'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.health:.0f} health'))
