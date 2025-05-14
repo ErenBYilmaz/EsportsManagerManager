@@ -40,7 +40,7 @@ class MoneyChange(GameEvent):
         player.money += self.money_change
 
     def short_notation(self):
-        return f"{self.money_change:+.1f} €"
+        return f"{self.money_change:+.2f} €"
 
 
 class HealthChange(GameEvent):
@@ -61,5 +61,3 @@ class MotivationChange(GameEvent):
 
     def short_notation(self):
         return f"{self.motivation_change:+.1f} motivation"
-
-
