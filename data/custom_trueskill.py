@@ -21,6 +21,16 @@ class CustomTrueSkill(TrueSkill):
         denominator = math.sqrt(size * (self.beta * self.beta) + sum_sigma)
         return self.cdf(delta_mu / denominator)
 
+    def one_on_one_win_probability(self, delta_mu: float):
+        # https://trueskill.org/#one-on-one-win-probability
+        denominator = math.sqrt(2 * self.beta * self.beta)
+        return self.cdf(delta_mu / denominator)
+
+    def one_on_one_score_ratio(self, delta_mu: float):
+        win_probability = self.one_on_one_win_probability(delta_mu)
+        lose_probability = 1 - win_probability
+        return win_probability / lose_probability
+
     def sample_ranks(self, rating_groups: List[Tuple[Rating]]):
         performances = [
             sum([

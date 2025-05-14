@@ -30,6 +30,19 @@ class TestTrueSkill(unittest.TestCase):
         print(ts.win_probability((a,), (b,)))
         assert 0.73 <= ts.win_probability((a,), (b,)) <= 0.74
 
+    def test_playing_against_slightly_higher_rated_player(self):
+        ts = CustomTrueSkill()
+        for difference in [1, 5, 10, 20, 50, 100, 200]:
+            probability = ts.one_on_one_win_probability(difference)
+            print(probability)
+            assert probability > 0.5
+
+        print()
+        for difference in [1, 5, 10, 20, 50, 100, 200]:
+            score_ratio = ts.one_on_one_score_ratio(difference)
+            print(score_ratio)
+            assert score_ratio > 1
+
     def test_playing_ffa(self):
         ts = CustomTrueSkill()
         num_players = 64

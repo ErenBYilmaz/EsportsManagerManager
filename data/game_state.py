@@ -37,8 +37,13 @@ class GameState(BaseModel):
                 return u
 
     def commit(self):
-        with open(self.save_file_name(), 'w') as save_file:
+        save_name = self.save_file_name()
+        tmp_file_name = save_name + '.tmp'
+        with open(tmp_file_name, 'w') as save_file:
             json.dump(self.model_dump(mode='json'), save_file, indent=2)
+        if os.path.isfile(save_name):
+            os.remove(save_name)
+        os.rename(tmp_file_name, save_name)
 
     def rollback(self):
         if not os.path.isfile(self.save_file_name()):

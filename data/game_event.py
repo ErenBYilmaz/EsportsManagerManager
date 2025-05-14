@@ -1,5 +1,6 @@
 from typing import List
 
+from data.custom_trueskill import CustomTrueSkill
 from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
 from data.game_event_base import GameEvent
@@ -32,7 +33,8 @@ class SkillChange(GameEvent):
         player.hidden_elo += self.hidden_elo_change
 
     def short_notation(self):
-        return f"{self.hidden_elo_change:+.1f} skill"
+        ts = CustomTrueSkill()
+        return f"{self.hidden_elo_change:+.1f} skill ({ts.one_on_one_score_ratio(self.hidden_elo_change)-1:+.1%})"
 
 
 class HiddenSkillChange(SkillChange):
