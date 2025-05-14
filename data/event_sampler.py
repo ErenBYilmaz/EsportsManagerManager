@@ -298,17 +298,38 @@ class AnalyzeMatches(ActionSampler):
         ]
 
 
+class EmptySampler(ActionSampler):
+    action_name: Literal['empty'] = 'empty'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        return [
+            ComposedEvent(
+                description=f'{player.name} did nothing.',
+                events=[]
+            ),
+        ]
+
+
 class FreeTimeSampler(ActionSampler):
     action_name: Literal['freeTime'] = 'freeTime'
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
-        ranked_result_event = random.choice(PlayRankedMatchesSampler().possible_events(game, player))
-        ranked_event = ComposedEvent(
-            description=f'{player.name} uses their free time to play some ranked matches.\n\n{ranked_result_event.text_description()}',
-            events=PlayRankedMatchesSampler().possible_events(game, player)
+        samplers = {
+            'play some ranked matches': PlayRankedMatchesSampler(),
+            'play some unranked matches': PlayUnrankedMatchesSampler(),
+            'play some bot matches': PlayBotMatchesSampler(),
+            'analyze some matches': AnalyzeMatches(),
+            'stream some games publicly': StreamingSampler(),
+            'do nothing worth mentioning': EmptySampler(),
+        }
+        activity = random.choice(list(samplers.keys()))
+        chosen_event_result: ComposedEvent = random.choice(samplers[activity].possible_events(game, player))
+        modified_event_result = ComposedEvent(
+            description=f'{player.name} uses their free time to {activity}.\n\n{chosen_event_result.description}',
+            events=[chosen_event_result]
         )
         possible_events = [
-            ranked_event,
+            modified_event_result,
             ComposedEvent(
                 description=f'{player.name} uses their free time to party hard.',
                 events=[
@@ -442,7 +463,9 @@ class AnalyzeMetaSampler(ActionSampler):
             'An optimized nutrition plan can improve well-being, but may also cost extra money.',
             'Highly motivated players typically perform better than less motivated players of the same skill level.',
             'Healthy players typically perform better than sick players of the same skill level.',
-            'Tournament rankings are computed from played tournament games and not always accurate.',
+            'Tournament rankings are computed from played tournament games only and are not always accurate.',
+            'Sabotaging opponents seems to be worth the time in the long run, as it is risky to get caught.',
+            'Analyzing the meta can give valuable insights about Esports Manager Manager that can be used by the player to improve their strategies.',
             *[
                 f'Recently, {s1} strategies seems to perform similarly well as {s2} strategies, maybe slightly {random.choice(["better", "worse"])}.'
                 for s1 in strategies
