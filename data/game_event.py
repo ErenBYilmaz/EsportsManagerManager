@@ -19,6 +19,8 @@ class ComposedEvent(GameEvent):
     def text_description(self):
         if self.description == '':
             return self.short_notation()
+        elif len(self.short_notation()) == 0:
+            return self.description
         else:
             return self.description + '\n\n' + self.short_notation()
 

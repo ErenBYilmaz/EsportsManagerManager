@@ -43,7 +43,8 @@ class ManagerMenu(Ui_ManagerWindow):
             self.hireCoachButton,
             self.sabotageButton,
             self.dopingButton,
-            self.replacePlayerButton
+            self.replacePlayerButton,
+            self.analyzeMatchesButton,
         ]:
             button.clicked.connect(functools.partial(self.take_action, button.objectName()))
 

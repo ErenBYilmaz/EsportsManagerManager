@@ -3,6 +3,7 @@ from typing import List, Literal
 
 import numpy
 from pydantic import BaseModel
+from scipy.special import expit
 
 from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIVATION
 from data.custom_trueskill import CustomTrueSkill
@@ -137,7 +138,7 @@ class PlayRankedMatchesSampler(ActionSampler):
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
-                o.hidden_elo -= 200  # those randoms are simply not as good as us professionals
+                o.hidden_elo -= 100  # those randoms are simply not as good as us professionals
                 o.visible_elo = o.hidden_skill()
                 o.visible_elo_sigma /= 10
                 opponent_ratings.append(o.visible_elo)
@@ -166,6 +167,84 @@ class PlayRankedMatchesSampler(ActionSampler):
                             f'{player.visible_elo:.0f} performance\n'
                             f'{numpy.mean(opponent_ratings):.0f} average opponent rating',
                 events=[]
+            ),
+        ]
+
+
+class PlayUnrankedMatchesSampler(ActionSampler):
+    action_name: Literal['ranked'] = 'unranked'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        ts = CustomTrueSkill()
+        num_games = random.randint(2, 6)
+        player = player.model_copy()  # dont change the original player
+        player.visible_elo_sigma = ts.sigma
+        player_placements = []
+        opponent_ratings = []
+        for _ in range(num_games):
+            random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
+            for o in random_opponents:
+                o.hidden_elo -= 100  # those randoms are simply not as good as us professionals
+                opponent_ratings.append(o.visible_elo)
+
+            unranked_game_players = [player] + random_opponents
+
+            ts = CustomTrueSkill()
+            true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in unranked_game_players]
+            ranks = ts.sample_ranks(true_ratings)
+            player_placements.append(ranks[0] + 1)
+
+        avg_placement = numpy.mean(player_placements)
+        avg_placement_percentile = (avg_placement - 1) / (NUM_BOTS_IN_TOURNAMENT + 1 - 1)
+        fun = 0
+        if avg_placement_percentile < 0.25:
+            fun += 1
+        if avg_placement_percentile < 0.05:
+            fun += 1
+        if avg_placement_percentile > 0.6:
+            fun -= 1
+        if avg_placement_percentile > 0.8:
+            fun -= 1
+        fun += random.randint(a=-2, b=2)
+        fun_rating = expit(numpy.array(fun) / 2) * 7
+        return [
+            ComposedEvent(
+                description=f'Unranked matches summary:\n\n'
+                            f'{num_games} matches played\n'
+                            f'{avg_placement :.1f} average placement\n'
+                            f'{fun_rating:.0f}/7 fun rating\n\n',
+                events=[
+                    MotivationChange(motivation_change=fun),
+                ]
+            ),
+        ]
+
+
+class AnalyzeMatches(ActionSampler):
+    action_name: Literal['analyzeMatches'] = 'analyzeMatches'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        num_games_analyzed = random.randint(1, 5)
+        blunders = 0
+        questionable_decisions = 0
+        excellent_decisions = 0
+        for _ in range(num_games_analyzed):
+            blunders += random.randint(0, 2)
+            questionable_decisions += random.randint(0, 3)
+            excellent_decisions += random.randint(0, 12)
+        lessons_learned = random.uniform(0, blunders + 0.4 * questionable_decisions + 0.05 * excellent_decisions)
+        boredom = random.uniform(-1, 0) * num_games_analyzed
+        return [
+            ComposedEvent(
+                description=f'Computer analysis of {num_games_analyzed} matches:\n\n'
+                            f'{blunders} blunders\n'
+                            f'{questionable_decisions} questionable decisions\n'
+                            f'{excellent_decisions} excellent decisions\n'
+                            f'{lessons_learned:.0f} lessons learned\n\n',
+                events=[
+                    MotivationChange(motivation_change=boredom),
+                    SkillChange(hidden_elo_change=lessons_learned),
+                ]
             ),
         ]
 
@@ -231,8 +310,10 @@ class EventSampler(BaseModel):
             HireCoachSampler(),
             OptimizeNutritionPlanSampler(),
             PlayRankedMatchesSampler(),
+            PlayUnrankedMatchesSampler(),
             FreeTimeSampler(),
             MotivationalSpeechSampler(),
+            AnalyzeMatches(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
