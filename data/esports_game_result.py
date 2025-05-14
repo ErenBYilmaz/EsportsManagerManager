@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from data.esports_player import PlayerName
+from data.player_name import PlayerName
 
 
 class EsportsGameResult(BaseModel):

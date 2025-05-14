@@ -49,7 +49,7 @@ class Client(EBC):
             elif isinstance(e, ErrorMessage):
                 self.ui.critical('Error', '\n'.join(e.args))
                 return supress_exception
-            elif isinstance(e, NotImplementedError):
+            elif isinstance(e, NotImplementedError) and 'abstract' not in str(e).lower():
                 print_exc_plus()
                 self.ui.critical('NotImplementedError', 'This functionality is not yet available')
                 return supress_exception

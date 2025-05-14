@@ -6,8 +6,8 @@ from PyQt5 import QtWidgets
 
 from data.app_gamestate import AppGameState
 from data.esports_player import ESportsPlayer
+from data.game_event_base import GameEvent
 from frontend.generated.manager_menu import Ui_ManagerWindow
-from data.waiting_condition import WaitingCondition
 from stories.take_action import TakeManagementAction
 
 if typing.TYPE_CHECKING:
@@ -124,3 +124,8 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(str(len(game.game_results))))
             self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(game.previous_ranks_string(n=3, player_name=player.name)))
 
+    def handle_game_event(self, e: GameEvent):
+        self.information(
+            title='TODO event title',
+            msg=e.text_description(),
+        )

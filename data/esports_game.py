@@ -3,15 +3,16 @@ from typing import Dict, Optional, List
 
 from pydantic import BaseModel, field_validator
 
-from config import NUM_BOTS_IN_TOURNAMENT
+from config import NUM_BOTS_IN_TOURNAMENT, DAYS_BETWEEN_MATCHES
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_game_result import EsportsGameResult
-from data.esports_player import ESportsPlayer, PlayerName
+from data.esports_player import ESportsPlayer
+from data.player_name import PlayerName
 from data.waiting_condition import WaitingCondition
 
 
 class ESportsGame(BaseModel):
-    players: Dict[str, ESportsPlayer] = {}
+    players: Dict[PlayerName, ESportsPlayer] = {}
     ongoing_match: Optional['ESportsGame'] = None
     ready_players: Dict[PlayerName, WaitingCondition] = {}
     game_results: List[EsportsGameResult] = []
@@ -108,6 +109,9 @@ class ESportsGame(BaseModel):
             assert len(new_ratings) == 1
             player.visible_elo = new_ratings[0].mu
             player.visible_elo_sigma = new_ratings[0].sigma
+
+        for player in players:
+            player.days_until_next_match = DAYS_BETWEEN_MATCHES
 
         self.game_results.append(EsportsGameResult(ranking=[player.name for _, player in sorted_player_ranks]))
         self.ongoing_match = None
