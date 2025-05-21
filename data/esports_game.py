@@ -1,3 +1,4 @@
+import random
 from typing import Dict, Optional, List
 
 from pydantic import BaseModel, field_validator
@@ -178,3 +179,10 @@ class ESportsGame(BaseModel):
                 name_info = f'**{name_info}**'
             summary += f'{rank + 1: 2d}: {name_info}, {rating_info}\n'
         return summary
+
+    def random_uncontrolled_player(self):
+        player_names = [name for name in self.players if self.players[name].controller is None]
+        if len(player_names) == 0:
+            return None
+        name = random.choice(player_names)
+        return self.players[name]

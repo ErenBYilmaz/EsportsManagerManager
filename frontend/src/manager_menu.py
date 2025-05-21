@@ -134,6 +134,7 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(game.previous_ranks_string(n=3, player_name=player.name)))
         self.statusWidget.clear()
         ts = CustomTrueSkill()
+        self.statusWidget.addItem(QListWidgetItem(f'Managing {my_player.tag_and_name()}'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.days_until_next_match} days until next match'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.money:.2f} €'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.health:.0f} health'))

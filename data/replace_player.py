@@ -9,15 +9,14 @@ if TYPE_CHECKING:
 
 class ReplacePlayerWithNewlyGeneratedPlayer(GameEvent):
     def apply(self, game: 'ESportsGame', player: 'ESportsPlayer'):
-        new_player = ESportsPlayer.create()
-        new_player.controller = player.controller
-        new_player.manager = player.manager
-        new_player.hidden_elo = player.hidden_elo
-        new_player.visible_elo = player.visible_elo
-        new_player.visible_elo_sigma = player.visible_elo_sigma
-        new_player.money = player.money
-        del game.players[player.name]
-        game.players[new_player.name] = new_player
+        new_player = game.random_uncontrolled_player()
+        assert new_player.controller is None
+
+        # in case there was a bot managing the player, that guy now manages our previous player, but keeps their money
+        new_player.manager, player.manager = player.manager, new_player.manager
+        new_player.money, player.money = player.money, new_player.money
+        new_player.days_until_next_match = player.days_until_next_match
+        new_player.controller, player.controller = player.controller, new_player.controller
 
     def short_notation(self):
-        return f"Player replacement"
+        return f"-> Player replacement"

@@ -609,9 +609,9 @@ class ReplacePlayerSampler(ActionSampler):
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
         return [
             ComposedEvent(
-                description=f'''You end the contract with {player.tag_and_name()} and replace them with a newly generated player. The new player is not as good as the old one, but at least they are not sick anymore.''',
+                description=f'''You end the contract with {player.tag_and_name()}.''',
                 events=[
-                    ReplacePlayerWithNewlyGeneratedPlayer(motivation_change=-0.5),
+                    ReplacePlayerWithNewlyGeneratedPlayer(),
                 ]
             ),
         ]

@@ -55,8 +55,4 @@ class AppGameState(GameState):
             self.game = ESportsGame.model_validate(json_info['game'])
 
     def random_uncontrolled_player(self):
-        player_names = [name for name in self.game.players if self.game.players[name].controller is None]
-        if len(player_names) == 0:
-            return None
-        name = random.choice(player_names)
-        return self.game.players[name]
+        return self.game.random_uncontrolled_player()
