@@ -83,7 +83,7 @@ class GameState(BaseModel):
         if 'users' in json_info:
             for user_info in json_info['users']:
                 if not self.user_name_exists(user_info['username']):
-                    self.new_user(User(user_info['username']), initialize=False)
+                    self.new_user(User(username=user_info['username']), initialize=False)
                 user = self.user_by_name(user_info['username'])
                 for k, v in user_info.items():
                     setattr(user, k, v)

@@ -1,4 +1,3 @@
-import random
 from typing import Dict, Optional, List
 
 from pydantic import BaseModel, field_validator
@@ -101,19 +100,21 @@ class ESportsGame(BaseModel):
             player.average_rank = (player.average_rank * len(self.game_results) + rank) / (len(self.game_results) + 1)
 
         # update visible ratings
-        visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in players]
-        assert len(visible_ratings) == len(self.players) == len(ranks)
-        new_ratings = ts.rate(visible_ratings, ranks)
+        old_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in players]
+        assert len(old_ratings) == len(self.players) == len(ranks)
+        new_ratings = ts.rate(old_ratings, ranks)
         assert len(new_ratings) == len(players)
-        for new_ratings, player in zip(new_ratings, players):
-            assert len(new_ratings) == 1
-            player.visible_elo = new_ratings[0].mu
-            player.visible_elo_sigma = new_ratings[0].sigma
+        for new_rating, player in zip(new_ratings, players):
+            assert len(new_rating) == 1
+            player.visible_elo = new_rating[0].mu
+            player.visible_elo_sigma = new_rating[0].sigma
 
         for player in players:
             player.days_until_next_match = DAYS_BETWEEN_MATCHES
 
-        self.game_results.append(EsportsGameResult(ranking=[player.name for _, player in sorted_player_ranks]))
+        self.game_results.append(EsportsGameResult(ranking=[player.name for _, player in sorted_player_ranks],
+                                                   rating_before=[old_ratings[players.index(player)][0].mu for _, player in sorted_player_ranks],
+                                                   rating_after=[new_ratings[players.index(player)][0].mu for _, player in sorted_player_ranks]))
         self.ongoing_match = None
         self.cleanup_ready_players()
 
@@ -161,3 +162,19 @@ class ESportsGame(BaseModel):
         if len(ranks) == 0:
             return 'N/A'
         return ' <- '.join(str(rank) for rank in ranks)
+
+    def match_summary(self, match_idx: int, focus_on_player: str) -> str:
+        match_result = self.game_results[match_idx]
+        changes = match_result.rating_changes_dict()
+        new_ratings = match_result.rating_after_dict()
+        assert focus_on_player in new_ratings
+        assert focus_on_player in match_result.ranking
+        summary = 'Rankings:\n'
+        for rank, player_name in enumerate(match_result.ranking):
+            player = self.players[player_name]
+            rating_info = f'rating {new_ratings[player_name]:.0f} ({changes[player_name]:+.0f})'
+            name_info = player.tag_and_name()
+            if player_name == focus_on_player:
+                name_info = f'**{name_info}**'
+            summary += f'{rank + 1}: {name_info}, {rating_info}\n'
+        return summary
