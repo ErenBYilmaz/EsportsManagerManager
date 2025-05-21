@@ -466,6 +466,8 @@ class AnalyzeMetaSampler(ActionSampler):
             'Tournament rankings are computed from played tournament games only and are not always accurate.',
             'Sabotaging opponents seems to be worth the time in the long run, as it is risky to get caught.',
             'Analyzing the meta can give valuable insights about Esports Manager Manager that can be used by the player to improve their strategies.',
+            'Doping is generally not regarded as a viable strategy.',
+            'One forum user says: "Kill yourself".',
             *[
                 f'Recently, {s1} strategies seems to perform similarly well as {s2} strategies, maybe slightly {random.choice(["better", "worse"])}.'
                 for s1 in strategies
@@ -575,8 +577,28 @@ class Sabotage(ActionSampler):
                 ]
             ),
             ComposedEvent(
-                description=f'You have almost been caught trying to sabotage {opponent.tag_and_name()} and decide not to to risk it today.',
+                description=f'You have almost been caught trying to sabotage {opponent.tag_and_name()} and decide not to continue risking it today.',
                 events=[]
+            ),
+        ]
+
+
+class Doping(ActionSampler):
+    action_name: Literal['doping'] = 'doping'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        return [
+            ComposedEvent(
+                description=f'''
+The integrity of esports relies not only on skill and strategy, but also on fairness and respect for the rules of competition. Any use of performance-enhancing substances undermines this foundation and compromises both the credibility of the sport and the health of its participants.
+
+Doping—whether for increased reaction time, focus, or endurance—distorts competition and violates the principles of equal opportunity. It can lead to disciplinary actions, including suspensions, disqualification, and permanent bans, as enforced by tournament organizers and esports governing bodies. Beyond competitive consequences, such practices pose serious risks to physical and mental health, particularly under long-term or unsupervised use.
+
+Esports continues to evolve as a professional discipline, with increasing attention on the ethical and physical standards expected of its players. Maintaining a clean, fair, and responsible competitive environment is essential for the future of the game.
+''',
+                events=[
+                    MotivationChange(motivation_change=-0.5),
+                ]
             ),
         ]
 
@@ -596,6 +618,7 @@ class EventSampler(BaseModel):
             AnalyzeMetaSampler(),
             NewStrategy(),
             Sabotage(),
+            Doping(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
