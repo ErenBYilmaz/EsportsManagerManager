@@ -176,5 +176,5 @@ class ESportsGame(BaseModel):
             name_info = player.tag_and_name()
             if player_name == focus_on_player:
                 name_info = f'**{name_info}**'
-            summary += f'{rank + 1}: {name_info}, {rating_info}\n'
+            summary += f'{rank + 1: 2d}: {name_info}, {rating_info}\n'
         return summary

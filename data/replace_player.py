@@ -9,8 +9,6 @@ if TYPE_CHECKING:
 
 class ReplacePlayerWithNewlyGeneratedPlayer(GameEvent):
     def apply(self, game: 'ESportsGame', player: 'ESportsPlayer'):
-        player = player
-        game = self.affected_game
         new_player = ESportsPlayer.create()
         new_player.controller = player.controller
         new_player.manager = player.manager

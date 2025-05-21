@@ -12,6 +12,7 @@ from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
 from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange, HiddenSkillChange, EventAffectingOtherPlayer
 from data.game_event_base import GameEvent
+from data.replace_player import ReplacePlayerWithNewlyGeneratedPlayer
 
 
 class ActionSampler(BaseModel):
@@ -504,7 +505,7 @@ class AnalyzeMetaSampler(ActionSampler):
         return common_events
 
 
-class NewStrategy(ActionSampler):
+class NewStrategySampler(ActionSampler):
     action_name: Literal['newStrategy'] = 'newStrategy'
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
@@ -542,7 +543,7 @@ class NewStrategy(ActionSampler):
         ]
 
 
-class Sabotage(ActionSampler):
+class SabotageSampler(ActionSampler):
     action_name: Literal['sabotage'] = 'sabotage'
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
@@ -583,7 +584,7 @@ class Sabotage(ActionSampler):
         ]
 
 
-class Doping(ActionSampler):
+class DopingSampler(ActionSampler):
     action_name: Literal['doping'] = 'doping'
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
@@ -602,6 +603,19 @@ Esports continues to evolve as a professional discipline, with increasing attent
             ),
         ]
 
+class ReplacePlayerSampler(ActionSampler):
+    action_name: Literal['replacePlayer'] = 'replacePlayer'
+
+    def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
+        return [
+            ComposedEvent(
+                description=f'''You end the contract with {player.tag_and_name()} and replace them with a newly generated player. The new player is not as good as the old one, but at least they are not sick anymore.''',
+                events=[
+                    ReplacePlayerWithNewlyGeneratedPlayer(motivation_change=-0.5),
+                ]
+            ),
+        ]
+
 
 class EventSampler(BaseModel):
     def samplers(self) -> List[ActionSampler]:
@@ -616,9 +630,10 @@ class EventSampler(BaseModel):
             PlayBotMatchesSampler(),
             StreamingSampler(),
             AnalyzeMetaSampler(),
-            NewStrategy(),
-            Sabotage(),
-            Doping(),
+            NewStrategySampler(),
+            SabotageSampler(),
+            DopingSampler(),
+            ReplacePlayerSampler(),
         ]
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
