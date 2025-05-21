@@ -29,6 +29,8 @@ class TakeManagementAction(Story):
         game = server_gamestate.gs.game_at_depth(depth)
         player = game.player_controlled_by(user.username)
 
+        if game.ongoing_match:
+            return precondition_failed('The match has already started. You can do that after the match.')
         if player.pending_choices:
             # pretend that the player did not know about that event yet and send it again
             return {'new_events': [e.model_dump() for e in player.pending_choices], 'player_name': player.name}
