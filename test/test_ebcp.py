@@ -23,3 +23,11 @@ class TestEBCP(unittest.TestCase):
         self.assertEqual(result.y, 4)
         self.assertEqual(result.name, 'c')
         self.assertEqual(type(result),  self.C)
+
+    def test_model_dump(self):
+        result = self.C(x=3, y=4, name='c').model_dump()
+        self.assertEqual(result['x'], 3)
+        self.assertEqual(result['y'], 4)
+        self.assertEqual(result['name'], 'c')
+        assert 'SUBCLASSES_BY_NAME' not in result
+        print(result)

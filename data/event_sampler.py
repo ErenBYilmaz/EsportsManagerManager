@@ -12,7 +12,9 @@ from data.esports_game import ESportsGame
 from data.esports_player import ESportsPlayer
 from data.game_event import ComposedEvent, SkillChange, MoneyChange, HealthChange, MotivationChange, HiddenSkillChange, EventAffectingOtherPlayer
 from data.game_event_base import GameEvent
+from data.manager_choice import ManagerChoice
 from data.replace_player import ReplacePlayerWithNewlyGeneratedPlayer
+from data.unknown_outcome import UnknownOutcome
 
 
 class ActionSampler(BaseModel):
@@ -354,25 +356,75 @@ class FreeTimeSampler(ActionSampler):
 class MotivationalSpeechSampler(ActionSampler):
     action_name: Literal['freeTime'] = 'motivationalSpeech'
 
+    def statements(self):
+        return [
+            "Stay focused and trust in your preparation. You've trained for this moment.",
+            "Mistakes happen, but it's how you recover that defines you. Keep pushing forward.",
+            "You have the skills to win. Believe in yourself!",
+            "Every match is a new opportunity to prove your worth. Seize it.",
+            "Take a deep breath and stay calm. Pressure is just part of the game.",
+            "Your hard work and dedication will pay off. Keep giving your best.",
+            "Learn from every game, whether you win or lose. Growth is the real victory.",
+            "We expect improvement, but remember, progress takes time. Keep at it.",
+            "You're doing great. Keep up the momentum and finish strong.",
+            "Even if things don't go as planned, stay composed and adapt.",
+            "Remember why you started playing. Enjoy the game and give it your all.",
+            "Your effort inspires everyone around you. Keep leading by example.",
+            "The tournament is tough, but so are you. Show them what you're made of.",
+            "Relax, focus, and play your game. The results will follow.",
+            "Every match is a chance to learn and improve. Embrace the challenge."
+
+            "Your recent performance has been outstanding. Build on that momentum.",
+            "You've shown great improvement in the last matches. Keep it up.",
+            "Remember the clutch plays you made earlier. You can do it again.",
+            "Even if the last match didn't go as planned, focus on what you did well and improve.",
+            "Your consistency in the last games has been impressive. Stay focused.",
+            "Think about how far you've come in this tournament. Keep pushing forward.",
+            "You bounced back from tough situations before. You can do it again.",
+            "The way you adapted in the last game was brilliant. Use that same mindset now.",
+            "You’ve already proven you belong here. Play with confidence.",
+
+            "Your recent performance has been disappointing. We need to see improvement.",
+            "You let the fans down in the last match. Reflect on your mistakes and do better.",
+            "This is not the level of play we expect from you. Step up your game.",
+            "You seem distracted. Focus on the task at hand.",
+            "We can't afford such mistakes in critical moments. Be more careful.",
+            "Your decision-making has been questionable lately. Think before you act.",
+            "I am counting on you, but you're not delivering. Take responsibility.",
+            "You need to take this more seriously. This is not a casual game.",
+            "Your lack of preparation is evident. Put in the effort.",
+            "We expected more from you. This is not acceptable.",
+            "You seem to be underestimating the competition. Stay sharp.",
+            "Your performance today was shocking. What happened out there?",
+            "This is not the time for excuses. Fix your mistakes.",
+            "You need to control your emotions better. Stay composed.",
+        ]
+
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
-        common_events = [
-            ComposedEvent(
-                description=f'{player.name} is inspired.',
-                events=[
-                    MotivationChange(motivation_change=+2),
+        statements = random.choices(self.statements(), k=4)
+
+        return [
+            ManagerChoice(
+                title='Motivational Speech',
+                description=f'You are planning how to motivate {player.name}.',
+                choices=[
+                    ComposedEvent(
+                        description=statement,
+                        events=[
+                            UnknownOutcome(
+                                possibilities=[
+                                    ComposedEvent(description=f'{player.name} is inspired :)', events=[MotivationChange(motivation_change=+2),]),
+                                    ComposedEvent(description=f'{player.name} does not care :|', events=[MotivationChange(motivation_change=+0),]),
+                                    ComposedEvent(description=f'{player.name} is bored :(', events=[MotivationChange(motivation_change=-2),]),
+                                ],
+                                probability_weights=[0.5, 0.1, 0.1],
+                            ),
+                        ]
+                    )
+                    for statement in statements
                 ]
-            ),
+            )
         ]
-        possible_events = [
-            *(common_events * 2),
-            ComposedEvent(
-                description=f'{player.name} is bored.',
-                events=[
-                    MotivationChange(motivation_change=-2),
-                ]
-            ),
-        ]
-        return possible_events
 
 
 class StreamingSampler(ActionSampler):
@@ -602,6 +654,7 @@ Esports continues to evolve as a professional discipline, with increasing attent
                 ]
             ),
         ]
+
 
 class ReplacePlayerSampler(ActionSampler):
     action_name: Literal['replacePlayer'] = 'replacePlayer'

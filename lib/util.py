@@ -20,7 +20,7 @@ from shutil import copyfile
 from subprocess import CalledProcessError, check_output, PIPE
 from threading import RLock
 from types import FunctionType
-from typing import Union, Tuple, List, Optional, Dict, Type, Any
+from typing import Union, Tuple, List, Optional, Dict, Type, Any, ClassVar
 from unittest import mock
 
 import cachetools
@@ -865,7 +865,7 @@ def compute_sample_weights(y_true):
 
 
 class EBC:
-    SUBCLASSES_BY_NAME: Dict[str, Type['EBC']] = {}
+    SUBCLASSES_BY_NAME: ClassVar[Dict[str, Type['EBC']]] = {}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -939,6 +939,10 @@ def ebc_from_json(cls: Type[EBC], data: Dict[str, Any]):
 
 class EBCP(EBC, BaseModel):
     pass
+    # def model_dump(self, *args, **kwargs) -> dict[str, Any]:
+    #     data = super().model_dump(*args, **kwargs)
+    #     del data['SUBCLASSES_BY_NAME']
+    #     return data
 
 
 def probably_serialized_from_ebc(data):
