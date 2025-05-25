@@ -1,4 +1,6 @@
+import datetime
 import functools
+import gc
 import itertools
 import json
 import math
@@ -9,40 +11,31 @@ import sys
 import threading
 import time
 from bisect import bisect_left
-import datetime
 from enum import Enum
 from itertools import chain, combinations
-
-# noinspection PyUnresolvedReferences
-from subprocess import CalledProcessError, check_output, PIPE
-from unittest import mock
-
-from pydantic import BaseModel
-
-import lib.tuned_cache
-import sklearn.svm
-
-import cachetools
-
 from math import log, isnan, nan, floor, log10, gcd
 from numbers import Number
 from shutil import copyfile
+# noinspection PyUnresolvedReferences
+from subprocess import CalledProcessError, check_output, PIPE
 from threading import RLock
 from types import FunctionType
 from typing import Union, Tuple, List, Optional, Dict, Type, Any
+from unittest import mock
 
+import cachetools
+import hanging_threads
+import matplotlib.cm
+import matplotlib.pyplot as plt
 import numpy
 import numpy as np
 import pandas
-import scipy.stats
 import scipy.optimize
+import scipy.stats
+import sklearn.svm
 import tabulate
-import hanging_threads
+from pydantic import BaseModel
 from scipy.ndimage import zoom
-
-import matplotlib.pyplot as plt
-import matplotlib.cm
-import gc
 
 from lib.my_logger import logging
 
@@ -879,18 +872,25 @@ class EBC:
         EBC.SUBCLASSES_BY_NAME[cls.__name__] = cls
 
     def __eq__(self, other):
-        return type(other) == type(self) and self.__dict__ == other.__dict__
+        return type(other) == type(self) and self.filtered_dict() == other.__dict__
 
     def __str__(self):
-        return str(self.__dict__)
+        return str(self.filtered_dict())
 
     def __repr__(self):
-        return f'{type(self).__name__}(**' + str(self.__dict__) + ')'
+        return f'{type(self).__name__}(**' + str(self.filtered_dict()) + ')'
+
+    def filtered_dict(self):
+        return {
+            k: v
+            for k, v in self.__dict__.items()
+            if k != 'SUBCLASSES_BY_NAME'
+        }
 
     def to_json(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {
             'type': type(self).__name__,
-            **self.__dict__,
+            **self.filtered_dict(),
         }
         if 'SUBCLASSES_BY_NAME' in result:
             del result['SUBCLASSES_BY_NAME']

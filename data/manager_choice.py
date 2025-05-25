@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class ManagerChoice(GameEvent):
     choices: List[GameEvent]
     description: str = ''
+    title: str
 
     def apply(self, game: 'ESportsGame', player: 'ESportsPlayer'):
         player.pending_choices.append(self)
