@@ -43,8 +43,9 @@ class ChooseEventAction(Story):
         else:
             return bad_request(f'No option with description "{choice_description}" available in choice "{choice_title}".')
 
-        if isinstance(event, UnknownOutcome):
+        if isinstance(event, UnknownOutcome): # the outcome was unknown before the choice was made, now we know it
             event = event.sample_event()
+        player.pending_choices.remove(choice)
         event.apply(game, player)
 
         return {'new_events': [event.to_json()], 'player_name': player.name}

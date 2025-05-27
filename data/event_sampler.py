@@ -3,7 +3,6 @@ import random
 from typing import List, Literal
 
 import numpy
-from pydantic import BaseModel
 from scipy.special import expit
 
 from config import BASE_PLAYER_HEALTH, NUM_BOTS_IN_TOURNAMENT, BASE_PLAYER_MOTIVATION, BOT_RATING_STEP
@@ -409,18 +408,14 @@ class MotivationalSpeechSampler(ActionSampler):
                 title='Motivational Speech',
                 description=f'You are planning how to motivate {player.name}.',
                 choices=[
-                    ComposedEvent(
+                    UnknownOutcome(
                         description=f'"{statement}"',
-                        events=[
-                            UnknownOutcome(
-                                possibilities=[
-                                    ComposedEvent(description=f'{player.name} is inspired :)', events=[MotivationChange(motivation_change=+2),]),
-                                    ComposedEvent(description=f'{player.name} does not care :|', events=[MotivationChange(motivation_change=+0),]),
-                                    ComposedEvent(description=f'{player.name} is bored :(', events=[MotivationChange(motivation_change=-2),]),
-                                ],
-                                probability_weights=[0.5, 0.1, 0.1],
-                            ),
-                        ]
+                        possibilities=[
+                            ComposedEvent(description=f'{player.name} is inspired :)', events=[MotivationChange(motivation_change=+2), ]),
+                            ComposedEvent(description=f'{player.name} does not care :|', events=[MotivationChange(motivation_change=+0), ]),
+                            ComposedEvent(description=f'{player.name} is bored :(', events=[MotivationChange(motivation_change=-2), ]),
+                        ],
+                        probability_weights=[0.5, 0.1, 0.1],
                     )
                     for statement in statements
                 ]

@@ -180,7 +180,6 @@ class TestTrueSkill(unittest.TestCase):
     #     print(result.pvalue)
     #     self.assertGreater(result.pvalue, 0.05)
 
-
     def test_sampling_ranks_converges_again_after_skill_change_if_sigma_is_reset(self):
         ts = CustomTrueSkill()
         num_players = 64
@@ -203,6 +202,40 @@ class TestTrueSkill(unittest.TestCase):
         visible_ratings = [(ts.create_rating(r[0].mu),) for r in visible_ratings]
 
         for i in range(num_games_per_rating):
+            results = ts.sample_ranks(hidden_ratings_2)
+            visible_ratings = ts.rate(visible_ratings, results)
+
+        for i, ((hidden_rating,), (visible_rating,)) in enumerate(zip(hidden_ratings_2, visible_ratings)):
+            delta_mu = hidden_rating.mu - visible_rating.mu
+            print(f"Player {i}: mu={hidden_rating.mu:.1f}, sigma={hidden_rating.sigma:.1f}, delta_mu={delta_mu :.1f}, delta_sigma={hidden_rating.sigma - visible_rating.sigma:.1f}")
+            tolerance = 100
+            assert abs(delta_mu) < tolerance
+
+        player_1_vs_63_estimated_win_probability = ts.win_probability(visible_ratings[0], visible_ratings[63])
+        print(player_1_vs_63_estimated_win_probability)
+        assert player_1_vs_63_estimated_win_probability < 0.05
+
+    def test_sampling_ranks_converges_again_after_skill_change_even_if_sigma_is_not_reset(self):
+        ts = CustomTrueSkill()
+        num_players = 64
+        num_games_rating_1 = 200
+        num_games_rating_2 = 1000
+        initial_spread = 640
+        hidden_ratings_1 = [(ts.create_rating(ts.mu - initial_spread / 2 + player_idx * initial_spread / num_players),)
+                            for player_idx in range(num_players)]
+        random.shuffle(hidden_ratings_1)
+        hidden_ratings_2 = [(ts.create_rating(ts.mu - initial_spread / 2 + player_idx * initial_spread / num_players),)
+                            for player_idx in range(num_players)]
+        visible_ratings = [(ts.create_rating(ts.mu),) for _ in range(num_players)]
+
+        player_1_vs_63_estimated_win_probability = ts.win_probability(visible_ratings[0], visible_ratings[63])
+        self.assertAlmostEqual(player_1_vs_63_estimated_win_probability, 0.5)
+
+        for i in range(num_games_rating_1):
+            results = ts.sample_ranks(hidden_ratings_1)
+            visible_ratings = ts.rate(visible_ratings, results)
+
+        for i in range(num_games_rating_2):
             results = ts.sample_ranks(hidden_ratings_2)
             visible_ratings = ts.rate(visible_ratings, results)
 
