@@ -892,13 +892,14 @@ class EBC:
             'type': type(self).__name__,
             **self.filtered_dict(),
         }
-        if 'SUBCLASSES_BY_NAME' in result:
-            del result['SUBCLASSES_BY_NAME']
         for k in result:
             if isinstance(result[k], EBC):
                 result[k] = result[k].to_json()
             elif isinstance(result[k], numpy.ndarray):
                 result[k] = result[k].tolist()
+            elif isinstance(result[k], dict):
+                result[k] = {k2: v.to_json() if isinstance(v, EBC) else v
+                             for k2, v in result[k].items()}
             elif isinstance(result[k], list):
                 result[k] = [r.to_json() if isinstance(r, EBC) else r
                              for r in result[k]]
@@ -930,6 +931,12 @@ def ebc_from_json(cls: Type[EBC], data: Dict[str, Any]):
                        if probably_serialized_from_ebc(x)
                        else x
                        for x in v]
+        elif isinstance(v, dict):
+            data[k] = {
+                k: EBC.SUBCLASSES_BY_NAME[x['type']].from_json(x)
+                if probably_serialized_from_ebc(x)
+                else x
+                for k, x in v.items()}
     try:
         # noinspection PyArgumentList
         return cls(**data)
@@ -939,10 +946,6 @@ def ebc_from_json(cls: Type[EBC], data: Dict[str, Any]):
 
 class EBCP(EBC, BaseModel):
     pass
-    # def model_dump(self, *args, **kwargs) -> dict[str, Any]:
-    #     data = super().model_dump(*args, **kwargs)
-    #     del data['SUBCLASSES_BY_NAME']
-    #     return data
 
 
 def probably_serialized_from_ebc(data):

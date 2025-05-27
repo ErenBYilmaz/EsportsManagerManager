@@ -1,8 +1,8 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from lib.util import EBCP
 
 
-class WaitingCondition(BaseModel):
+class WaitingCondition(EBCP):
     match_state: Literal['match_begin', 'match_end']
     match_idx: int

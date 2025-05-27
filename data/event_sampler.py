@@ -15,9 +15,10 @@ from data.game_event_base import GameEvent
 from data.manager_choice import ManagerChoice
 from data.replace_player import ReplacePlayerWithNewlyGeneratedPlayer
 from data.unknown_outcome import UnknownOutcome
+from lib.util import EBCP
 
 
-class ActionSampler(BaseModel):
+class ActionSampler(EBCP):
     action_name: str
 
     def get_events_for_action(self, game: ESportsGame, player: ESportsPlayer, action_name: str) -> List[GameEvent]:
@@ -401,7 +402,7 @@ class MotivationalSpeechSampler(ActionSampler):
         ]
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
-        statements = random.choices(self.statements(), k=4)
+        statements = random.sample(self.statements(), k=4)
 
         return [
             ManagerChoice(
@@ -409,7 +410,7 @@ class MotivationalSpeechSampler(ActionSampler):
                 description=f'You are planning how to motivate {player.name}.',
                 choices=[
                     ComposedEvent(
-                        description=statement,
+                        description=f'"{statement}"',
                         events=[
                             UnknownOutcome(
                                 possibilities=[
@@ -670,7 +671,7 @@ class ReplacePlayerSampler(ActionSampler):
         ]
 
 
-class EventSampler(BaseModel):
+class EventSampler(EBCP):
     def samplers(self) -> List[ActionSampler]:
         return [
             HireCoachSampler(),

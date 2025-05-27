@@ -23,7 +23,7 @@ class SetReadyStatus(Story):
         ready = bool(json_info['ready'])
         depth = json_info["depth"]
         game = server_gamestate.gs.game_at_depth(depth)
-        wait_for: WaitingCondition = WaitingCondition.model_validate(json_info['wait_for'])
+        wait_for: WaitingCondition = WaitingCondition.from_json(json_info['wait_for'])
         player = game.player_controlled_by(user.username)
         player_name = player.name
         if ready and player.pending_choices:
@@ -48,5 +48,5 @@ class SetReadyStatus(Story):
         return {'ready': ready, 'player_name': player_name}
 
     def action(self):
-        self.to_server({'ready': self.ui.ready_status, 'wait_for': self.ui.wait_for.model_dump(), 'depth': self.ui.depth})
+        self.to_server({'ready': self.ui.ready_status, 'wait_for': self.ui.wait_for.to_json(), 'depth': self.ui.depth})
         self.client().check_game_state()

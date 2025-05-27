@@ -9,11 +9,12 @@ from data.custom_trueskill import CustomTrueSkill
 from data.manager_choice import ManagerChoice
 from data.game_event_base import GameEvent
 from data.player_name import PlayerName
+from lib.util import EBCP
 from network.my_types import UserName
 from resources.player_names import PLAYER_NAME_EXAMPLES
 
 
-class ESportsPlayer(BaseModel):
+class ESportsPlayer(EBCP):
     name: PlayerName
     controller: Optional[UserName] = None  # name of the user controlling the player, or None if bot-controlled
     manager: Optional[PlayerName] = None  # name of the manager controlling the player, or None if top-level

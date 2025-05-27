@@ -1,6 +1,7 @@
 from typing import Dict, Type
 
 from stories.check_game_state import CheckGameState
+from stories.choose_event import ChooseEventAction
 from stories.join_server import JoinServer
 from stories.ready import SetReadyStatus
 from stories.start_server import StartServer
@@ -13,7 +14,8 @@ valid_post_routes: Dict[str, Type[Story]] = {
                                                         StartServer,
                                                         CheckGameState,
                                                         SetReadyStatus,
-                                                        TakeManagementAction, ]
+                                                        TakeManagementAction,
+                                                        ChooseEventAction,]
 }
 
 read_only_routes = [CheckGameState]

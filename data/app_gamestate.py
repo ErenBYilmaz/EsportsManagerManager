@@ -52,7 +52,7 @@ class AppGameState(GameState):
     def update_from_json(self, json_info: Dict[str, Any]):
         super().update_from_json(json_info)
         if 'game' in json_info:
-            self.game = ESportsGame.model_validate(json_info['game'])
+            self.game = ESportsGame.from_json(json_info['game'])
 
     def random_uncontrolled_player(self):
         return self.game.random_uncontrolled_player()

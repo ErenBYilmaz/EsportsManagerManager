@@ -9,9 +9,10 @@ from data.esports_game_result import EsportsGameResult
 from data.esports_player import ESportsPlayer
 from data.player_name import PlayerName
 from data.waiting_condition import WaitingCondition
+from lib.util import EBCP
 
 
-class ESportsGame(BaseModel):
+class ESportsGame(EBCP):
     players: Dict[PlayerName, ESportsPlayer] = {}
     ongoing_match: Optional['ESportsGame'] = None
     ready_players: Dict[PlayerName, WaitingCondition] = {}

@@ -8,12 +8,12 @@ from data.game_event_base import GameEvent
 from data.manager_choice import ManagerChoice
 
 
-class EventDialog(QDialog):
-    def __init__(self, event: ManagerChoice, completion_callback: Callable[[GameEvent], None], parent=None):
+class ChoiceEventDialog(QDialog):
+    def __init__(self, event: ManagerChoice, completion_callback: Callable[[str, GameEvent], None], parent=None):
         super().__init__(parent)
 
         self.completion_callback = completion_callback
-
+        self.event_ = event
         self.setWindowTitle(event.title)
 
         # Erstellen Sie benutzerdefinierte Schaltflächen mit Text und Tooltips
@@ -47,7 +47,7 @@ class EventDialog(QDialog):
     def select_choice(self, choice: GameEvent):
         self.final_choice = choice
         self.accept()
-        self.completion_callback(choice)
+        self.completion_callback(self.event_.title, choice)
 
 
 def main():
@@ -60,7 +60,7 @@ def main():
         ComposedEvent(events=[MotivationChange(motivation_change=-1)], description='Be lazy'),
         ComposedEvent(events=[MoneyChange(money_change=+5)], description='Sell the results. Very long button label!'),
     ], description="Test Event", title='Test Event Title')
-    dialog = EventDialog(event, completion_callback=lambda choice: print(f"Choice selected: {choice}"))
+    dialog = ChoiceEventDialog(event, completion_callback=lambda title, choice: print(f"Choice selected: {choice}"))
     dialog.show()
     print(dialog.final_choice)
     sys.exit(app.exec_())

@@ -15,8 +15,6 @@ if typing.TYPE_CHECKING:
 
 
 class TakeManagementAction(Story):
-    MAX_GAMES_PER_REQUEST = 2
-
     def __init__(self, ui: 'frontend.src.manager_menu.ManagerMenu', action_name: typing.Optional[str] = None):
         super().__init__(ui)
         self.ui = ui
@@ -33,7 +31,7 @@ class TakeManagementAction(Story):
             return precondition_failed('The match has already started. You can do that after the match.')
         if player.pending_choices:
             # pretend that the player did not know about that event yet and send it again
-            return {'new_events': [e.model_dump() for e in player.pending_choices], 'player_name': player.name}
+            return {'new_events': [e.to_json() for e in player.pending_choices], 'player_name': player.name}
         if player.days_until_next_match <= 0:
             return precondition_failed('You don\'t have enough time to take this action before the next tournament match. Better get ready.')
 

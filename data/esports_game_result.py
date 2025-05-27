@@ -3,9 +3,10 @@ from typing import List
 from pydantic import BaseModel
 
 from data.player_name import PlayerName
+from lib.util import EBCP
 
 
-class EsportsGameResult(BaseModel):
+class EsportsGameResult(EBCP):
     ranking: List[PlayerName] = []
     rating_before: List[float] = []
     rating_after: List[float] = []

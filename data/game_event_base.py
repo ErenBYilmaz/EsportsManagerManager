@@ -14,4 +14,4 @@ class GameEvent(EBCP):
         return self.short_notation()
 
     def short_notation(self):
-        raise NotImplementedError("Abstract method")
+        raise NotImplementedError(f"Abstract method (type is {type(self).__name__})")

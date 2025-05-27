@@ -6,10 +6,11 @@ from typing import List, Literal, Any, Dict
 from pydantic import BaseModel
 
 from data.user import User
+from lib.util import EBCP
 from network.my_types import UserName
 
 
-class GameState(BaseModel):
+class GameState(EBCP):
     type: str = 'GameState'
     game_name: str
     users: List[User] = []
@@ -40,7 +41,7 @@ class GameState(BaseModel):
         save_name = self.save_file_name()
         tmp_file_name = save_name + '.tmp'
         with open(tmp_file_name, 'w') as save_file:
-            json.dump(self.model_dump(mode='json'), save_file, indent=2)
+            json.dump(self.to_json(), save_file, indent=2)
         if os.path.isfile(save_name):
             os.remove(save_name)
         os.rename(tmp_file_name, save_name)
@@ -68,12 +69,12 @@ class GameState(BaseModel):
     def load(cls, game_name) -> 'GameState':
         with open(cls.save_name_by_game_name(game_name), 'r') as save_file:
             data = save_file.read()
-        result = cls.model_validate_json(data)
+        result = cls.from_json(json.loads(data))
         assert type(result).__name__ == 'AppGameState'
         return result
 
     def info_for_user(self, username: str):
-        json_info = self.model_dump(mode='python')
+        json_info = self.to_json()
         for user_info in json_info['users']:
             if user_info['username'] != username:
                 del user_info['session_id']
@@ -86,6 +87,9 @@ class GameState(BaseModel):
                     self.new_user(User(username=user_info['username']), initialize=False)
                 user = self.user_by_name(user_info['username'])
                 for k, v in user_info.items():
+                    if k == 'type':
+                        assert v == 'AppUser', v
+                        continue
                     setattr(user, k, v)
 
     def new_user(self, user: User, initialize):

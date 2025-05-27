@@ -9,7 +9,10 @@ from data.app_gamestate import AppGameState
 from data.custom_trueskill import CustomTrueSkill
 from data.esports_player import ESportsPlayer
 from data.game_event_base import GameEvent
+from data.manager_choice import ManagerChoice
+from frontend.event_dialog import ChoiceEventDialog
 from frontend.generated.manager_menu import Ui_ManagerWindow
+from stories.choose_event import ChooseEventAction
 from stories.take_action import TakeManagementAction
 
 if typing.TYPE_CHECKING:
@@ -142,8 +145,15 @@ class ManagerMenu(Ui_ManagerWindow):
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.visible_elo:.0f} tournament performance'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.average_rank:.1f} avg. ranking'))
 
+    def send_choice(self, choice_title: str, choice: GameEvent):
+        with self.client.handling_errors():
+            ChooseEventAction(self, choice_title=choice_title, choice=choice)()
+
     def handle_game_event(self, e: GameEvent):
-        self.information(
-            title='TODO event title',
-            msg=e.text_description(),
-        )
+        if isinstance(e, ManagerChoice):
+            ChoiceEventDialog(e, completion_callback=self.send_choice, parent=self.centralwidget).show()
+        else:
+            self.information(
+                title='TODO event title',
+                msg=e.text_description(),
+            )

@@ -14,12 +14,15 @@ class UnknownOutcome(GameEvent):
     description: str = ''
 
     def apply(self, game: 'ESportsGame', player: 'ESportsPlayer'):
-        event: GameEvent = random.choices(
+        event: GameEvent = self.sample_event()
+        event.apply(game, player)
+
+    def sample_event(self) -> GameEvent:
+        return random.choices(
             self.possibilities,
             weights=self.probability_weights if self.probability_weights else None,
             k=1
         )[0]
-        event.apply(game, player)
 
     def short_notation(self):
         return 'Unknown outcome'

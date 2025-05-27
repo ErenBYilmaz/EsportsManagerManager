@@ -1,10 +1,11 @@
 import pydantic
 from pydantic import BaseModel
 
+from lib.util import EBCP
 from network.my_types import UserName
 
 
-class User(BaseModel):
+class User(EBCP):
     username: UserName
     session_id: str = None
 
