@@ -44,8 +44,9 @@ class RandomEventSampler(EBCP):
                     title='Patch notes',
                     description=f'Update {new_version} has just been released.',
                     choices=[
-                        ComposedEvent(description='Thoroughly analyze.', events=[SkillChange(hidden_elo_change=+1)]),
+                        ComposedEvent(description='Thoroughly analyze.', events=[SkillChange(hidden_elo_change=+0.5)]),
                         TakeActionEvent(description='Try it out against bots.', action_name='botMatch'),
+                        TakeActionEvent(description='Try it out in ranked games.', action_name='ranked'),
                         UnknownOutcome(
                             description='Search for bugs and exploits.',
                             possibilities=[
