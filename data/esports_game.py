@@ -102,14 +102,14 @@ class ESportsGame(EBCP):
             player.average_rank = (player.average_rank * len(self.game_results) + rank) / (len(self.game_results) + 1)
 
         # update visible ratings
-        old_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in players]
+        old_ratings = [(ts.create_rating(mu=player.tournament_elo, sigma=player.tournament_elo_sigma),) for player in players]
         assert len(old_ratings) == len(self.players) == len(ranks)
         new_ratings = ts.rate(old_ratings, ranks)
         assert len(new_ratings) == len(players)
         for new_rating, player in zip(new_ratings, players):
             assert len(new_rating) == 1
-            player.visible_elo = new_rating[0].mu
-            player.visible_elo_sigma = new_rating[0].sigma
+            player.tournament_elo = new_rating[0].mu
+            player.tournament_elo_sigma = new_rating[0].sigma
 
         for player in players:
             player.days_until_next_match = DAYS_BETWEEN_MATCHES

@@ -1,7 +1,7 @@
 import random
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from config import DAYS_BETWEEN_MATCHES, BASE_PLAYER_HEALTH, BASE_PLAYER_MOTIVATION
 from data.clan_tag import clan_tag_from_name
@@ -22,8 +22,13 @@ class ESportsPlayer(EBCP):
     average_rank: float = 0
 
     hidden_elo: float
-    visible_elo: float  # typically close to hidden_elo + health + motivation
-    visible_elo_sigma: float
+    # below elo values are typically close to hidden_elo + health + motivation
+    tournament_elo: float  = Field(default_factory=lambda: ESportsPlayer.starting_elo())
+    tournament_elo_sigma: float  = Field(default_factory=lambda: ESportsPlayer.starting_sigma())
+    ranked_elo: float = Field(default_factory=lambda: ESportsPlayer.starting_elo())
+    ranked_elo_sigma: float = Field(default_factory=lambda: ESportsPlayer.starting_sigma())
+    bot_match_elo: float = Field(default_factory=lambda: ESportsPlayer.starting_elo())
+    bot_match_elo_sigma: float = Field(default_factory=lambda: ESportsPlayer.starting_sigma())
 
     money: float = 0
     health: float = 0
@@ -34,7 +39,7 @@ class ESportsPlayer(EBCP):
     pending_choices: List[ManagerChoice] = []
 
     def rank_sorting_key(self):
-        return (self.average_rank, -self.visible_elo, self.name[::-1][len(self.name) // 2:])
+        return (self.average_rank, -self.tournament_elo, self.name[::-1][len(self.name) // 2:])
 
     def clan_tag(self):
         if self.controller is not None:
@@ -49,13 +54,25 @@ class ESportsPlayer(EBCP):
     def hidden_skill(self):
         return self.hidden_elo + self.health + self.motivation
 
-    @staticmethod
-    def create():
+    @classmethod
+    def create(cls):
         return ESportsPlayer(controller=None,
                              name=random.choice(PLAYER_NAME_EXAMPLES),
-                             hidden_elo=1700 - BASE_PLAYER_HEALTH - BASE_PLAYER_MOTIVATION + random.normalvariate(0, 100),
-                             visible_elo=1700,
+                             hidden_elo=cls.starting_elo() - BASE_PLAYER_HEALTH - BASE_PLAYER_MOTIVATION + random.normalvariate(0, 100),
+                             tournament_elo=cls.starting_elo(),
+                             tournament_elo_sigma=ESportsPlayer.starting_sigma(),
+                             ranked_elo=cls.starting_elo(),
+                             ranked_elo_sigma=ESportsPlayer.starting_sigma(),
+                             bot_match_elo=cls.starting_elo(),
+                             bot_match_elo_sigma=ESportsPlayer.starting_sigma(),
                              health=BASE_PLAYER_HEALTH + random.normalvariate(0, 5),
                              motivation=BASE_PLAYER_MOTIVATION + random.normalvariate(0, 10),
-                             visible_elo_sigma=CustomTrueSkill().sigma,
                              money=1000, )
+
+    @classmethod
+    def starting_sigma(cls):
+        return CustomTrueSkill().sigma
+
+    @classmethod
+    def starting_elo(cls):
+        return 1700

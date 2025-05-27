@@ -191,7 +191,7 @@
     </column>
     <column>
      <property name="text">
-      <string>Skill Rating</string>
+      <string>Performance</string>
      </property>
     </column>
     <column>

@@ -132,26 +132,27 @@ class PlayRankedMatchesSampler(ActionSampler):
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
         ts = CustomTrueSkill()
-        num_games = random.randint(5, 15)
-        player = player.model_copy()  # dont change the original player
-        player.visible_elo_sigma = ts.sigma
+        num_games = random.randint(3, 10)
+        rating_before = player.ranked_elo
+        performance_tracker = player.model_copy()  # measures performance from played games only
+        performance_tracker.ranked_elo_sigma = ts.sigma
         player_placements = []
         opponent_ratings = []
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
                 o.hidden_elo -= 90  # those randoms are simply not as good as us professionals
-                if o.hidden_elo > player.visible_elo:
-                    o.hidden_elo = player.visible_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
+                if o.hidden_elo > player.ranked_elo:
+                    o.hidden_elo = player.ranked_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
                 o.hidden_elo += random.normalvariate(sigma=100)  # there is some extra skill fluctuation
-                o.visible_elo = o.hidden_skill()
-                o.visible_elo_sigma /= 10
-                opponent_ratings.append(o.visible_elo)
+                o.ranked_elo = o.hidden_skill()
+                o.ranked_elo_sigma /= 10
+                opponent_ratings.append(o.ranked_elo)
 
             match_players = [player] + random_opponents
 
             ts = CustomTrueSkill()
-            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in match_players]
+            visible_ratings = [(ts.create_rating(mu=player.ranked_elo, sigma=player.ranked_elo_sigma),) for player in match_players]
             true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in match_players]
             ranks = ts.sample_ranks(true_ratings)
             assert len(visible_ratings) == len(match_players) == len(ranks)
@@ -159,8 +160,13 @@ class PlayRankedMatchesSampler(ActionSampler):
             assert len(new_ratings) == len(match_players)
             for new_ratings, p in zip(new_ratings, match_players):
                 assert len(new_ratings) == 1
-                p.visible_elo = new_ratings[0].mu
-                p.visible_elo_sigma = new_ratings[0].sigma
+                p.ranked_elo = new_ratings[0].mu
+                p.ranked_elo_sigma = new_ratings[0].sigma
+
+            visible_ratings_recent_matches = [(ts.create_rating(mu=player.ranked_elo, sigma=player.ranked_elo_sigma),) for player in [performance_tracker] + random_opponents]
+            new_ratings = ts.rate(visible_ratings_recent_matches, ranks)
+            performance_tracker.ranked_elo = new_ratings[0][0].mu
+            performance_tracker.ranked_elo_sigma = new_ratings[0][0].sigma
 
             player_placements.append(ranks[0] + 1)
 
@@ -169,8 +175,9 @@ class PlayRankedMatchesSampler(ActionSampler):
                 description=f'Ranked matches summary:\n\n'
                             f'{num_games} matches played\n'
                             f'{numpy.mean(player_placements):.1f} average placement\n'
-                            f'{player.visible_elo:.0f} performance in those games\n'
-                            f'{numpy.mean(opponent_ratings):.0f} average opponent rating',
+                            f'{performance_tracker.ranked_elo:.0f} performance in those games\n'
+                            f'{numpy.mean(opponent_ratings):.0f} average opponent rating'
+                            f'-> {player.ranked_elo:.0f} skill rating ({player.ranked_elo - rating_before:+.0f})',
                 events=[]
             ),
         ]
@@ -180,17 +187,14 @@ class PlayUnrankedMatchesSampler(ActionSampler):
     action_name: Literal['ranked'] = 'unranked'
 
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
-        ts = CustomTrueSkill()
-        num_games = random.randint(2, 6)
-        player = player.model_copy()  # dont change the original player
-        player.visible_elo_sigma = ts.sigma
+        num_games = random.randint(3, 10)
         player_placements = []
         for _ in range(num_games):
             random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
             for o in random_opponents:
                 o.hidden_elo -= 90  # those randoms are simply not as good as us professionals
-                if o.hidden_elo > player.visible_elo:
-                    o.hidden_elo = player.visible_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
+                if o.hidden_elo > player.ranked_elo:
+                    o.hidden_elo = player.ranked_elo + random.normalvariate(0, 100)  # unless the professionals are also bad, then we pair them against bad players
                 o.hidden_elo += random.normalvariate(sigma=100)  # there is some extra skill fluctuation
 
             match_players = [player] + random_opponents
@@ -232,30 +236,36 @@ class PlayBotMatchesSampler(ActionSampler):
     def possible_events(self, game: ESportsGame, player: ESportsPlayer) -> List[GameEvent]:
         ts = CustomTrueSkill()
         num_games = random.randint(5, 15)
-        player = player.model_copy()  # dont change the original player
-        player.visible_elo_sigma = ts.sigma
+        rating_before = player.bot_match_elo
+        performance_tracker = player.model_copy()  # measures performance from played games only
+        performance_tracker.bot_match_elo_sigma = ts.sigma
         player_placements = []
-        bot_elo = round(player.visible_elo / BOT_RATING_STEP + random.normalvariate(sigma=1)) * BOT_RATING_STEP
+        bot_elo = round(player.bot_match_elo / BOT_RATING_STEP + random.normalvariate(sigma=1)) * BOT_RATING_STEP
         for _ in range(num_games):
-            random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT)]
+            random_opponents = [ESportsPlayer.create() for _ in range(NUM_BOTS_IN_TOURNAMENT - 1)]
             for o in random_opponents:
                 o.hidden_elo = bot_elo
-                o.visible_elo = o.hidden_skill()
-                o.visible_elo_sigma /= 10
+                o.bot_match_elo = o.hidden_skill()
+                o.bot_match_elo_sigma /= 10
 
             match_players = [player] + random_opponents
 
             ts = CustomTrueSkill()
-            visible_ratings = [(ts.create_rating(mu=player.visible_elo, sigma=player.visible_elo_sigma),) for player in match_players]
+            visible_ratings = [(ts.create_rating(mu=player.bot_match_elo, sigma=player.bot_match_elo_sigma),) for player in match_players]
             true_ratings = [(ts.create_rating(mu=player.hidden_skill()),) for player in match_players]
             ranks = ts.sample_ranks(true_ratings)
             assert len(visible_ratings) == len(match_players) == len(ranks)
             new_ratings = ts.rate(visible_ratings, ranks)
             assert len(new_ratings) == len(match_players)
-            for new_ratings, p in zip(new_ratings, match_players):
-                assert len(new_ratings) == 1
-                p.visible_elo = new_ratings[0].mu
-                p.visible_elo_sigma = new_ratings[0].sigma
+            for new_rating, p in zip(new_ratings, match_players):
+                assert len(new_rating) == 1
+                p.bot_match_elo = new_rating[0].mu
+                p.bot_match_elo_sigma = new_rating[0].sigma
+
+            visible_ratings_recent_matches = [(ts.create_rating(mu=player.bot_match_elo, sigma=player.bot_match_elo_sigma),) for player in [performance_tracker] + random_opponents]
+            new_ratings = ts.rate(visible_ratings_recent_matches, ranks)
+            performance_tracker.bot_match_elo = new_ratings[0][0].mu
+            performance_tracker.bot_match_elo_sigma = new_ratings[0][0].sigma
 
             player_placements.append(ranks[0] + 1)
 
@@ -264,8 +274,9 @@ class PlayBotMatchesSampler(ActionSampler):
                 description=f'Bot-matches summary:\n\n'
                             f'{num_games} matches played\n'
                             f'{bot_elo:.0f} official bot rating\n'
-                            f'{numpy.mean(player_placements):.1f} average placement\n'
-                            f'{player.visible_elo:.0f} performance in those games',
+                            f'{numpy.mean(player_placements):.1f}/{NUM_BOTS_IN_TOURNAMENT + 1} average placement\n'
+                            f'{performance_tracker.bot_match_elo:.0f} performance in those games\n'
+                            f'-> {player.bot_match_elo:.0f} skill rating ({player.bot_match_elo - rating_before:+.0f})',
                 events=[]
             ),
         ]

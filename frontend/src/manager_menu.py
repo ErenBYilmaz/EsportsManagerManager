@@ -132,7 +132,7 @@ class ManagerMenu(Ui_ManagerWindow):
             self.leagueTableWidget.setItem(row_idx, 0, QtWidgets.QTableWidgetItem(place_string))
             self.leagueTableWidget.setItem(row_idx, 1, QtWidgets.QTableWidgetItem(player.tag_and_name()))
             self.leagueTableWidget.setItem(row_idx, 2, QtWidgets.QTableWidgetItem(f'{player.average_rank:.1f}'))
-            self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.visible_elo))))
+            self.leagueTableWidget.setItem(row_idx, 3, QtWidgets.QTableWidgetItem(str(round(player.tournament_elo))))
             self.leagueTableWidget.setItem(row_idx, 4, QtWidgets.QTableWidgetItem(str(len(game.game_results))))
             self.leagueTableWidget.setItem(row_idx, 5, QtWidgets.QTableWidgetItem(game.previous_ranks_string(n=3, player_name=player.name)))
         self.statusWidget.clear()
@@ -142,8 +142,10 @@ class ManagerMenu(Ui_ManagerWindow):
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.money:.2f} €'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.health:.0f} health'))
         self.statusWidget.addItem(QListWidgetItem(f'{my_player.motivation:.0f} motivation'))
-        self.statusWidget.addItem(QListWidgetItem(f'{my_player.visible_elo:.0f} tournament performance'))
-        self.statusWidget.addItem(QListWidgetItem(f'{my_player.average_rank:.1f} avg. ranking'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.ranked_elo:.0f} ranked match rating'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.bot_match_elo:.0f} bot match performance'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.tournament_elo:.0f} tournament performance'))
+        self.statusWidget.addItem(QListWidgetItem(f'{my_player.average_rank:.1f} avg. tournament ranking'))
 
     def send_choice(self, choice_title: str, choice: GameEvent):
         with self.client.handling_errors():
@@ -154,6 +156,6 @@ class ManagerMenu(Ui_ManagerWindow):
             ChoiceEventDialog(e, completion_callback=self.send_choice, parent=self.centralwidget).show()
         else:
             self.information(
-                title='TODO event title',
+                title='Esports Manager Manager',
                 msg=e.text_description(),
             )
