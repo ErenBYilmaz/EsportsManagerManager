@@ -1,7 +1,7 @@
 import unittest
 
 from data.esports_player import ESportsPlayer
-from data.event_sampler import StreamingSampler
+from data.action_event_sampler import StreamingSampler
 from data.game_event import ComposedEvent
 
 

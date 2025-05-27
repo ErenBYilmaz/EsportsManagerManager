@@ -3,6 +3,7 @@ import typing
 from data import server_gamestate
 from data.event_sampler import EventSampler
 from data.game_event import MotivationChange, HealthChange, MoneyChange, SkillChange, ComposedEvent, GameEvent
+from data.random_event_sampler import RandomEventSampler
 from data.replace_player import ReplacePlayerWithNewlyGeneratedPlayer
 from data.game_event_base import GameEvent
 from data.manager_choice import ManagerChoice
@@ -40,7 +41,7 @@ class TakeManagementAction(Story):
         if action_name.endswith('Button'):
             action_name = action_name[:-len('Button')]
         events_resulting_from_action = EventSampler().get_events_for_action(game, player, action_name)
-        randomly_occurring_events = EventSampler().get_random_events(game, player)
+        randomly_occurring_events = RandomEventSampler().get_random_events(game, player)
         player.days_until_next_match -= 1
 
         new_events: typing.List[GameEvent] = events_resulting_from_action + randomly_occurring_events

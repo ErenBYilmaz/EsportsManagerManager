@@ -53,6 +53,9 @@ class ManagerMenu(Ui_ManagerWindow):
             button.clicked.connect(functools.partial(self.take_action, button.objectName()))
 
     def take_action(self, action_name: str):
+        if self.my_player().pending_choices:
+            for e in self.my_player().pending_choices:
+                self.handle_game_event(e)
         if self.my_player().days_until_next_match <= 0:
             self.information('Tournament match today!',
                              'You don\'t have enough time to take this action before the next tournament match. '
